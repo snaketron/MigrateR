@@ -7,7 +7,7 @@ To name the R-package I asked ChatGPT the following question:
 
 > I want to create an R-package that quantifies and compares cell velocities using probabilistic 
 Bayesian models, but I can't find a good name. Can you give me top-10 suggestions? (Please use 
-David Letterman's top 10 list bit please)
+David Letterman's top 10 list bit)
 
 
 

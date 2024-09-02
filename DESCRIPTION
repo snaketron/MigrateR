@@ -1,0 +1,52 @@
+Package: cellvel
+Type: Package
+Title: Quantification of cell migration speed with Bayesian probability models
+Version: 0.0.1
+Authors@R: 
+    person(given = "Simo",  
+           family = "Kitanovski",
+           role = c("aut", "cre"),
+           email = "simo.kitanovski@uni-due.de")
+Description: cellvel implements a hierarchical Bayesian model for 
+    quantitative analysis of cell speeds in samples treated under 
+    various biological conditions.
+License: GPL-3 + file LICENSE
+Depends: 
+    R (>= 4.2.0)
+Imports:
+    ape,
+    base,
+    dplyr,
+    ggforce,
+    ggplot2,
+    ggtree,
+    methods,
+    patchwork,
+    Rcpp (>= 0.12.0),
+    RcppParallel (>= 5.0.1),
+    reshape2,
+    rstan (>= 2.18.1),
+    rstantools (>= 2.4.0),
+    scales,
+    stats,
+    utils
+Suggests:
+    BiocStyle,
+    knitr,
+    testthat
+Encoding: UTF-8
+NeedsCompilation: no
+biocViews: Visualization, Clustering, CellBiology, Software
+BugReports: https://github.com/snaketron/cellvel/issues
+URL: https://github.com/snaketron/cellvel
+RoxygenNote: 7.3.1
+VignetteBuilder: knitr
+Biarch: true
+LinkingTo: 
+    BH (>= 1.66.0),
+    Rcpp (>= 0.12.0),
+    RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
+SystemRequirements: GNU make

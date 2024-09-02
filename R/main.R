@@ -33,12 +33,8 @@ cellvel <- function(x, control = NULL) {
   # get summary
   s <- get_summary(x = x, f = f)
 
-  browser()
   # get ppc plots
   ppc <- get_ppc(x = x, s = s)
-
-  # get clusters plots
-  # cs <- get_clusters(s = s)
 
   return(f = f, ppc = ppc, x = x, s = s)
 }
@@ -152,10 +148,5 @@ get_ppc <- function(x, s) {
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
   return(g)
-}
-
-
-get_clusters <- function(x) {
-  message("computing clusters...\n")
 }
 

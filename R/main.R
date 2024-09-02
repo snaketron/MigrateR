@@ -3,7 +3,7 @@
 #' The functions takes a data.frame, x, as its main input. Meanwhile,
 #' the input list control can be used to configure the MCMC procedure
 #' performed by R-package rstan.  The output is a list which contains:
-#' 1) f = fit as rstan object; 2) x = processed input; 3) ppc = plot
+#' 1) f = fit as rstan object; 2) x = processed input; 3) p = plot
 #' with posterior predictive check; 4) s = summary of model parameters
 #' (means, medians, 95% credible intervals, etc.).
 #'
@@ -34,9 +34,9 @@ cellvel <- function(x, control = NULL) {
   s <- get_summary(x = x, f = f)
 
   # get ppc plots
-  ppc <- get_ppc(x = x, s = s)
+  p <- get_ppc(x = x, s = s)
 
-  return(f = f, ppc = ppc, x = x, s = s)
+  return(list(f = f, p = p, x = x, s = s))
 }
 
 

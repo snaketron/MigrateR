@@ -1,14 +1,5 @@
 
-#' input checks
-#'
-#' The functions takes a data.frame as its main input. It then checks if
-#' the necessary columns are included and processes the input for modeling.
-#'
-#' @return a data.frame
-#' @examples
-#' data(d, package = "cellvel")
-#' pd <- process_input(x = d)
-#' head(pd)
+
 process_input <- function(x) {
 
   check_x <- function(x) {

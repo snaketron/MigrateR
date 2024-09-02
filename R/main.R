@@ -48,11 +48,8 @@ get_fit <- function(x, control) {
   q <- q[duplicated(q)==F, ]
   q <- q[order(q$s, decreasing = F),]
 
-  # get model
-  M <- stanmodels$M
-
   # fit model
-  fit <- sampling(object = M,
+  fit <- sampling(object = stanmodels$M,
                   data = list(y = x$sv, N = nrow(x), s = x$s,
                               g = q$g, r = q$r, b = q$b),
                   chains = control$mcmc_chains,

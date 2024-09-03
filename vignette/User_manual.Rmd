@@ -11,7 +11,9 @@ vignette: >
 
 
 ```{r setup, include = FALSE, warning = FALSE}
-knitr::opts_chunk$set(comment = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(comment = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE)
 ```
 
 
@@ -64,6 +66,7 @@ o <- cellvel::cellvel(x = d, control = list(mcmc_chains = 3, mcmc_cores = 3))
 ```
 
 
+
 # PPC: most observations (points) fall within the 95% HDIs of the model predictions (error bars)
 
 ```{r, fig.width=6, fig.height=3}
@@ -77,6 +80,19 @@ ggplot()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
+# PPC: another look
+
+```{r, fig.width=6, fig.height=3}
+e <- rstan::extract(object = o$f, par = "y_hat_sample")$y_hat_sample
+e <- reshape2::melt(data = e)
+colnames(e) <- c("iter", "s", "yhat")
+
+ggplot()+
+  geom_sina(data = o$x, aes(x = as.factor(s), y = sv), size = 0.25, col = "red")+
+  geom_violin(data = e, fill = NA, aes(x = as.factor(s), y = yhat), col = "black")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab(label = "sample")
+```
 
 
 # Results 
@@ -104,32 +120,6 @@ g3 <- ggplot(data = o$s$eff_group)+
 
 (g1|g2)/g3
 ```
-
-
-## Effects on cell speed dispersion + 95% HDIs
-
-```{r, fig.width=5, fig.height=4}
-g1 <- ggplot(data = o$s$var_rep)+
-  geom_point(aes(x = replicate, y = mean))+
-  geom_errorbar(aes(x = replicate, y = mean, ymin = X2.5., 
-                    ymax = X97.5.), width = 0.1)+
-  ggtitle(label = "replicate-dispersion")
-
-g2 <- ggplot(data = o$s$var_batch)+
-  geom_point(aes(x = batch, y = mean))+
-  geom_errorbar(aes(x = batch, y = mean, ymin = X2.5., 
-                    ymax = X97.5.), width = 0.1)+
-  ggtitle(label = "batch-dispersion")
-
-g3 <- ggplot(data = o$s$var_group)+
-  geom_point(aes(x = group, y = mean))+
-  geom_errorbar(aes(x = group, y = mean, ymin = X2.5., 
-                    ymax = X97.5.), width = 0.1)+
-  ggtitle(label = "group-dispersion")
-
-(g1|g2)/g3
-```
-
 
 
 

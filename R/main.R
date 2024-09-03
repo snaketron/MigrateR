@@ -85,9 +85,9 @@ get_summary <- function(x, f) {
   eff_rep <- merge(x = eff_rep, y = l_r, by = "r", all.x = TRUE)
 
   # par: var_rep
-  var_rep <- data.frame(summary(f, par = "var_rep")$summary)
-  var_rep$r <- 1:nrow(var_rep)
-  var_rep <- merge(x = var_rep, y = l_r, by = "r", all.x = TRUE)
+  # var_rep <- data.frame(summary(f, par = "var_rep")$summary)
+  # var_rep$r <- 1:nrow(var_rep)
+  # var_rep <- merge(x = var_rep, y = l_r, by = "r", all.x = TRUE)
 
   # par: eff_batch
   eff_batch <- data.frame(summary(f, par = "eff_batch")$summary)
@@ -95,9 +95,9 @@ get_summary <- function(x, f) {
   eff_batch <- merge(x = eff_batch, y = l_p, by = "b", all.x = TRUE)
 
   # par: var_batch
-  var_batch <- data.frame(summary(f, par = "var_batch")$summary)
-  var_batch$b <- 1:nrow(var_batch)
-  var_batch <- merge(x = var_batch, y = l_p, by = "b", all.x = TRUE)
+  # var_batch <- data.frame(summary(f, par = "var_batch")$summary)
+  # var_batch$b <- 1:nrow(var_batch)
+  # var_batch <- merge(x = var_batch, y = l_p, by = "b", all.x = TRUE)
 
   # par: eff_group
   eff_group <- data.frame(summary(f, par = "eff_group")$summary)
@@ -105,12 +105,13 @@ get_summary <- function(x, f) {
   eff_group <- merge(x = eff_group, y = l_g, by = "g", all.x = TRUE)
 
   # par: var_group
-  var_group <- data.frame(summary(f, par = "var_group")$summary)
-  var_group$g <- 1:nrow(var_group)
-  var_group <- merge(x = var_group, y = l_g, by = "g", all.x = TRUE)
+  # var_group <- data.frame(summary(f, par = "var_group")$summary)
+  # var_group$g <- 1:nrow(var_group)
+  # var_group <- merge(x = var_group, y = l_g, by = "g", all.x = TRUE)
 
   # par: eff_sigma, var_sigma
-  sigma <- data.frame(summary(f, par = c("eff_sigma", "var_sigma"))$summary)
+  # sigma <- data.frame(summary(f, par = c("eff_sigma", "var_sigma"))$summary)
+  sigma <- data.frame(summary(f, par = c("eff_sigma"))$summary)
 
   # par: mu
   mu <- data.frame(summary(f, par = "mu")$summary)
@@ -118,18 +119,20 @@ get_summary <- function(x, f) {
   mu <- merge(x = mu, y = l_s, by = "s", all.x = TRUE)
 
   # par: phi
-  phi <- data.frame(summary(f, par = "phi")$summary)
-  phi$s <- 1:nrow(phi)
-  phi <- merge(x = phi, y = l_s, by = "s", all.x = TRUE)
+  # phi <- data.frame(summary(f, par = "phi")$summary)
+  # phi$s <- 1:nrow(phi)
+  # phi <- merge(x = phi, y = l_s, by = "s", all.x = TRUE)
 
   # par: y_hat_sample
   yhat <- data.frame(summary(f, par = "y_hat_sample")$summary)
   yhat$s <- 1:nrow(yhat)
   yhat <- merge(x = yhat, y = l_s, by = "s", all.x = TRUE)
 
+  # return(list(eff_rep = eff_rep, eff_batch = eff_batch, eff_group = eff_group,
+  #             var_rep = var_rep, var_batch = var_batch, var_group = var_group,
+  #             sigma = sigma, mu = mu, phi = phi, yhat = yhat))
   return(list(eff_rep = eff_rep, eff_batch = eff_batch, eff_group = eff_group,
-              var_rep = var_rep, var_batch = var_batch, var_group = var_group,
-              sigma = sigma, mu = mu, phi = phi, yhat = yhat))
+              sigma = sigma, mu = mu, yhat = yhat))
 }
 
 

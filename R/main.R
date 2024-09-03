@@ -70,6 +70,7 @@ get_summary <- function(x, f) {
 
   # get unique meta data
   l <- x[, c("s", "sample", "g", "group", "r", "replicate", "b", "batch")]
+  l_s <- l[duplicated(l)==FALSE, ]
   l_r<-l[duplicated(l[,c("r","replicate")])==FALSE,
          c("r","replicate")]
   l_p<-l[duplicated(l[,c("b","batch")])==FALSE,
@@ -114,18 +115,17 @@ get_summary <- function(x, f) {
   # par: mu
   mu <- data.frame(summary(f, par = "mu")$summary)
   mu$s <- 1:nrow(mu)
-  mu <- merge(x = mu, y = l, by = "s", all.x = TRUE)
+  mu <- merge(x = mu, y = l_s, by = "s", all.x = TRUE)
 
   # par: phi
   phi <- data.frame(summary(f, par = "phi")$summary)
   phi$s <- 1:nrow(phi)
-  phi <- merge(x = phi, y = l, by = "s", all.x = TRUE)
-
+  phi <- merge(x = phi, y = l_s, by = "s", all.x = TRUE)
 
   # par: y_hat_sample
   yhat <- data.frame(summary(f, par = "y_hat_sample")$summary)
   yhat$s <- 1:nrow(yhat)
-  yhat <- merge(x = yhat, y = l, by = "s", all.x = TRUE)
+  yhat <- merge(x = yhat, y = l_s, by = "s", all.x = TRUE)
 
   return(list(eff_rep = eff_rep, eff_batch = eff_batch, eff_group = eff_group,
               var_rep = var_rep, var_batch = var_batch, var_group = var_group,

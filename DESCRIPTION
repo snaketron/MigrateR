@@ -14,12 +14,9 @@ License: GPL-3 + file LICENSE
 Depends: 
     R (>= 4.2.0)
 Imports:
-    ape,
     base,
-    dplyr,
     ggplot2,
     ggforce,
-    ggtree,
     methods,
     patchwork,
     Rcpp (>= 0.12.0),
@@ -27,7 +24,6 @@ Imports:
     reshape2,
     rstan (>= 2.18.1),
     rstantools (>= 2.4.0),
-    scales,
     stats,
     utils
 Suggests:

@@ -19,7 +19,7 @@
 #' data(d, package = "cellvel")
 #' o <- cellvel(x = d)
 #' head(o)
-cellvel <- function(x, control = NULL) {
+cellvel <- function(x, control = NULL, model) {
 
   # check inputs
   x <- process_input(x)
@@ -28,7 +28,7 @@ cellvel <- function(x, control = NULL) {
   control <- process_control(control_in = control)
 
   # fit model
-  f <- get_fit(x = x, control = control)
+  f <- get_fit(x = x, control = control, model = model)
 
   # get summary
   s <- get_summary(x = x, f = f)
@@ -40,7 +40,7 @@ cellvel <- function(x, control = NULL) {
 }
 
 
-get_fit <- function(x, control) {
+get_fit <- function(x, control, model) {
   message("model fitting... \n")
 
   # transform data
@@ -48,8 +48,18 @@ get_fit <- function(x, control) {
   q <- q[duplicated(q)==F, ]
   q <- q[order(q$s, decreasing = F),]
 
+  if(model == "M") {
+    M <- stanmodels$M
+  }
+  if(model == "Mp") {
+    M <- stanmodels$Mp
+  }
+  if(model == "Ms") {
+    M <- stanmodels$Ms
+  }
+
   # fit model
-  fit <- sampling(object = stanmodels$M,
+  fit <- sampling(object = M,
                   data = list(y = x$sv, N = nrow(x), s = x$s,
                               g = q$g, r = q$r, b = q$b),
                   chains = control$mcmc_chains,
@@ -78,39 +88,22 @@ get_summary <- function(x, f) {
   l_g<-l[duplicated(l[,c("g","group","r","replicate","b","batch")])==FALSE,
          c("g","group","r","replicate","b","batch")]
 
-
   # par: eff_rep
   eff_rep <- data.frame(summary(f, par = "eff_rep")$summary)
   eff_rep$r <- 1:nrow(eff_rep)
   eff_rep <- merge(x = eff_rep, y = l_r, by = "r", all.x = TRUE)
-
-  # par: var_rep
-  # var_rep <- data.frame(summary(f, par = "var_rep")$summary)
-  # var_rep$r <- 1:nrow(var_rep)
-  # var_rep <- merge(x = var_rep, y = l_r, by = "r", all.x = TRUE)
 
   # par: eff_batch
   eff_batch <- data.frame(summary(f, par = "eff_batch")$summary)
   eff_batch$b <- 1:nrow(eff_batch)
   eff_batch <- merge(x = eff_batch, y = l_p, by = "b", all.x = TRUE)
 
-  # par: var_batch
-  # var_batch <- data.frame(summary(f, par = "var_batch")$summary)
-  # var_batch$b <- 1:nrow(var_batch)
-  # var_batch <- merge(x = var_batch, y = l_p, by = "b", all.x = TRUE)
-
   # par: eff_group
   eff_group <- data.frame(summary(f, par = "eff_group")$summary)
   eff_group$g <- 1:nrow(eff_group)
   eff_group <- merge(x = eff_group, y = l_g, by = "g", all.x = TRUE)
 
-  # par: var_group
-  # var_group <- data.frame(summary(f, par = "var_group")$summary)
-  # var_group$g <- 1:nrow(var_group)
-  # var_group <- merge(x = var_group, y = l_g, by = "g", all.x = TRUE)
-
-  # par: eff_sigma, var_sigma
-  # sigma <- data.frame(summary(f, par = c("eff_sigma", "var_sigma"))$summary)
+  # par: eff_sigma
   sigma <- data.frame(summary(f, par = c("eff_sigma"))$summary)
 
   # par: mu
@@ -118,19 +111,11 @@ get_summary <- function(x, f) {
   mu$s <- 1:nrow(mu)
   mu <- merge(x = mu, y = l_s, by = "s", all.x = TRUE)
 
-  # par: phi
-  # phi <- data.frame(summary(f, par = "phi")$summary)
-  # phi$s <- 1:nrow(phi)
-  # phi <- merge(x = phi, y = l_s, by = "s", all.x = TRUE)
-
   # par: y_hat_sample
   yhat <- data.frame(summary(f, par = "y_hat_sample")$summary)
   yhat$s <- 1:nrow(yhat)
   yhat <- merge(x = yhat, y = l_s, by = "s", all.x = TRUE)
 
-  # return(list(eff_rep = eff_rep, eff_batch = eff_batch, eff_group = eff_group,
-  #             var_rep = var_rep, var_batch = var_batch, var_group = var_group,
-  #             sigma = sigma, mu = mu, phi = phi, yhat = yhat))
   return(list(eff_rep = eff_rep, eff_batch = eff_batch, eff_group = eff_group,
               sigma = sigma, mu = mu, yhat = yhat))
 }

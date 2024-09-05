@@ -62,8 +62,11 @@ ggplot(data = d)+
 # Model
 
 ```{r}
-o <- cellvel::cellvel(x = d, control = list(mcmc_chains = 3, mcmc_cores = 3))
+o <- cellvel::cellvel(x = d, control = list(mcmc_chains = 3, mcmc_cores = 3),
+                      model = "M")
 ```
+
+
 
 
 

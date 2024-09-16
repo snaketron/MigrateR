@@ -7,7 +7,14 @@
 cellvel(x, control = NULL)
 }
 \value{
-a list
+A list which contains:
+\itemize{
+\item f = fit as rstan object
+\item x = processed input
+\item p = plot with posterior predictive check
+\item s = summary of model parameters (means, 95\% credible intervals, etc.)
+}
+
 }
 \description{
 The functions takes a data.frame, x, as its main input. Meanwhile,
@@ -15,17 +22,31 @@ the input list control can be used to configure the MCMC procedure
 performed by R-package rstan.  The output is a list which contains:
 1) f = fit as rstan object; 2) x = processed input; 3) p = plot
 with posterior predictive check; 4) s = summary of model parameters
-(means, medians, 95% credible intervals, etc.).
+(means, medians, 95\% credible intervals, etc.).
 }
 \details{
 The input x must have cell entries as rows and the following columns:
-* replicate = id of the biological replicate (e.g. rep1, rep2, rep3, ...)
-* batch = id of the experimental batch (e.g. plate X, plat Y, ...)
-* group = treatment group (e.g. compound x at dose 10mmol, ...)
-* v = numeric cell speed
+\itemize{
+\item replicate = character id of biological replicate (rep1, rep2, rep3, etc.)
+\item batch = character id of experimental batch (plate x, plat y, etc.)
+\item compound = character treatment compound (A, B, C, etc.)
+\item dose = numeric dose e.g. mmol (0, 1, 5, 10, etc.)
+\item v = numeric cell speed
+
+The input list named \code{control} confures the Markov Chain Monte Carlo
+sampling of R-package rstan (see example).
+}
+
 }
 \examples{
 data(d, package = "cellvel")
-o <- cellvel(x = d)
+o <- cellvel(x = d,
+             control = list(mcmc_warmup = 300,
+                            mcmc_steps = 600,
+                            mcmc_chains = 3,
+                            mcmc_cores = 1,
+                            mcmc_algorithm = "NUTS",
+                            adapt_delta = 0.9,
+                            max_treedepth = 10))
 head(o)
 }

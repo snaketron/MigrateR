@@ -31,17 +31,16 @@ ggplot2::theme_set(new = theme_bw(base_size = 10))
 # Data (raw)
 
 ```{r}
-data("d", package = "cellvel")
-head(d)
+data("d_clean", package = "cellvel")
+knitr::kable(d[1:10,], row.names = F, digits = 2)
 ```
 
-```{r, fig.width=6, fig.height=4}
+```{r, fig.width=6, fig.height=5}
 ggplot(data = d)+
-  geom_sina(aes(x = paste0("b=", batch, ", g=", group), col = replicate, y= v))+
+  facet_wrap(facets = ~treatment+batch, scales = "free_y")+
+  geom_sina(aes(x = as.factor(dose), col = replicate, y= v), size = 0.5)+
   theme_bw()+
-  theme(legend.position = "top",
-        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab(label = "batch (b) and group (g)")
+  xlab(label = "dose")
 ```
 
 
@@ -49,82 +48,71 @@ ggplot(data = d)+
 
 ```{r, fig.width=6, fig.height=4}
 ggplot(data = d)+
-  geom_sina(aes(x = paste0("b=", batch, ", g=", group), col = replicate, 
-                y=v/max(v)))+
+  facet_wrap(facets = ~treatment+batch, scales = "free_y")+
+  geom_sina(aes(x = as.factor(dose), col = replicate, y= v/max(v)), size = 0.5)+
   theme_bw()+
-  theme(legend.position = "top",
-        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab(label = "batch (b) and group (g)")+
-  ylab(label = "sv")
+  xlab(label = "dose")+
+  ylab(label = "s")
 ```
 
 
 # Model
 
-```{r}
-o <- cellvel::cellvel(x = d, control = list(mcmc_chains = 3, mcmc_cores = 3),
-                      model = "M")
+```{r, fig.width=7, fig.height=3.5}
+o <- cellvel(x = d,
+             model = "M",
+             control = list(mcmc_warmup = 300,
+                            mcmc_steps = 600,
+                            mcmc_chains = 3,
+                            mcmc_cores = 1,
+                            mcmc_algorithm = "NUTS",
+                            adapt_delta = 0.9,
+                            max_treedepth = 10))
+```
+
+
+# Treatment:dose specific effects
+
+```{r, fig.width=6, fig.height=3}
+ggplot(data = o$s$eff_group_mu)+
+  geom_line(aes(x = dose, y = mean, col = treatment))+
+  geom_point(aes(x = dose, y = mean, col = treatment))+
+  geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5., 
+                    col = treatment), width = 0.04)
 ```
 
 
 
+# Treatment:dose profiles
 
-
-# PPC: most observations (points) fall within the 95% HDIs of the model predictions (error bars)
-
-```{r, fig.width=6, fig.height=3}
-ggplot()+
-  geom_sina(data = o$x,
-            aes(x = paste0("b=", batch, ", g=", group), col=replicate, y = sv))+
-  geom_errorbar(data = o$s$yhat,
-                aes(x = paste0("b=", batch, ", g=", group), group = replicate, 
-                    y = mean, ymin = X2.5., ymax = X97.5.), width = 0.15,
-                position = position_dodge(width = 1), col = "black")+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```{r, fig.width=8, fig.height=5}
+get_profiles(x = o)
 ```
 
-# PPC: another look
 
-```{r, fig.width=6, fig.height=3}
+# PPC
+
+```{r, fig.width=5, fig.height=6}
 e <- rstan::extract(object = o$f, par = "y_hat_sample")$y_hat_sample
 e <- reshape2::melt(data = e)
 colnames(e) <- c("iter", "s", "yhat")
+q <- o$x[, c("s", "treatment", "dose", "group", "batch", "replicate")]
+q <- q[duplicated(q)==F,]
+e <- merge(x = e, y = q, all.x = T)
 
-ggplot()+
-  geom_sina(data = o$x, aes(x = as.factor(s), y = sv), size = 0.25, col = "red")+
-  geom_violin(data = e, fill = NA, aes(x = as.factor(s), y = yhat), col = "black")+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  xlab(label = "sample")
+g <- ggplot()+
+  facet_wrap(~paste0(treatment, " (", gsub(pattern = "n", replacement = '', 
+                                          x = replicate), ")"), ncol = 3, scales = "free")+
+  geom_sina(data = o$x, aes(x = as.factor(dose), y = sv, col = batch), size = 0.05)+
+  geom_violin(data = e, aes(x = as.factor(dose), y = yhat, linetype = batch), fill = NA, col = "black")+
+  theme_bw(base_size = 10)+
+  theme(legend.position = "none")+
+  theme(strip.text.x = element_text(margin = margin(0.02,0,0.02,0, "cm")))+
+  xlab(label = "dose")+
+  scale_y_continuous(name = "s", breaks = scales::pretty_breaks(3))+
+  scale_color_manual(values = c("orange", "steelblue"))
+g
 ```
-
-
-# Results 
-
-## Effects on cell speed + 95% highest density intervals (HDIs)
-
-```{r, fig.width=5, fig.height=4}
-g1 <- ggplot(data = o$s$eff_rep)+
-  geom_point(aes(x = replicate, y = mean))+
-  geom_errorbar(aes(x = replicate, y = mean, ymin = X2.5., 
-                    ymax = X97.5.), width = 0.1)+
-  ggtitle(label = "replicate-effect")
-
-g2 <- ggplot(data = o$s$eff_batch)+
-  geom_point(aes(x = batch, y = mean))+
-  geom_errorbar(aes(x = batch, y = mean, ymin = X2.5., 
-                    ymax = X97.5.), width = 0.1)+
-  ggtitle(label = "batch-effect")
-
-g3 <- ggplot(data = o$s$eff_group)+
-  geom_point(aes(x = group, y = mean))+
-  geom_errorbar(aes(x = group, y = mean, ymin = X2.5., 
-                    ymax = X97.5.), width = 0.1)+
-  ggtitle(label = "group-effect")
-
-(g1|g2)/g3
-```
-
-
 
 
 # Session Info

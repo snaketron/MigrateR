@@ -17,6 +17,8 @@ Imports:
     base,
     ggplot2,
     ggforce,
+    ggtree,
+    ape,
     methods,
     patchwork,
     Rcpp (>= 0.12.0),

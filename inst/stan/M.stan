@@ -10,9 +10,9 @@ data {
 parameters {
   vector [max(r)] eff_rep;
   vector [max(b)] eff_batch;
-  vector [max(g)] eff_group;
+  vector [max(g)] eff_group_mu;
   vector [max(s)] eff_z;
-  real <lower=0> eff_sigma;
+  real <lower=0> eff_group_sigma;
   real <lower=0> alpha;
 }
 
@@ -20,16 +20,16 @@ transformed parameters {
   vector<lower=0> [max(s)] mu;
   vector [max(s)] eff_sample;
 
-  eff_sample = eff_group[g] + eff_sigma * eff_z;
+  eff_sample = eff_group_mu[g] + eff_group_sigma * eff_z;
 
   mu =  exp(eff_rep[r] + eff_batch[b] + eff_sample);
 }
 
 model {
-  eff_rep ~ normal(-2, 2);
-  eff_batch ~ normal(-2, 2);
-  eff_group ~ normal(0, 1);
-  eff_sigma ~ normal(0, 1);
+  eff_rep ~ normal(-2.5, 1.5);
+  eff_batch ~ normal(0, 0.5);
+  eff_group_mu ~ normal(0, 1);
+  eff_group_sigma ~ normal(0,0.5);
   eff_z ~ std_normal();
 
   alpha ~ gamma(0.01, 0.01);

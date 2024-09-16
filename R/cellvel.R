@@ -178,7 +178,7 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean") {
     geom_point(aes(x = dose, y = mean))+
     geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), width = 0)+
     scale_y_continuous(position = "right", breaks = scales::pretty_breaks(n = 5))+
-    scale_x_continuous(breaks = c(1, 5, 10, 20), labels = c(1, 5, 10, 20))+
+    # scale_x_continuous(breaks = c(1, 5, 10, 20), labels = c(1, 5, 10, 20))+
     theme_bw(base_size = 10)+
     theme(strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))
 
@@ -190,7 +190,7 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean") {
     geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), width = 0, alpha = 0.5)+
     geom_line(aes(x = dose, y = mean))+
     geom_point(aes(x = dose, y = mean))+
-    scale_x_continuous(breaks = c(1, 5, 10, 20), labels = c(1, 5, 10, 20))+
+    # scale_x_continuous(breaks = c(1, 5, 10, 20), labels = c(1, 5, 10, 20))+
     theme_bw(base_size = 10)+
     theme(legend.position = "none",
           strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))

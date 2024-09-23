@@ -136,9 +136,26 @@ get_summary <- function(x, f) {
 }
 
 
-get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean") {
+get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean",
+                         select_ds, select_ts) {
   eg <- x$s$eff_group_mu
   es <- x$s$eff_sample
+
+  if(missing(select_ds)==FALSE) {
+    if(any(!select_ds %in% unique(eg$dose))) {
+      stop("selected doses not found in data")
+    }
+    eg <- eg[eg$dose %in% select_ds, ]
+    es <- es[es$dose %in% select_ds, ]
+  }
+
+  if(missing(select_ts)==FALSE) {
+    if(any(!select_ts %in% unique(eg$treatment))) {
+      stop("selected doses not found in data")
+    }
+    eg <- eg[eg$treatment %in% select_ts, ]
+    es <- es[es$treatment %in% select_ts, ]
+  }
 
   q <- acast(data = eg, formula = treatment~dose, value.var = "mean")
 
@@ -148,22 +165,13 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean") {
 
   tree <- ggtree(ph, linetype='solid')+
     geom_point2(mapping = aes(subset=isTip==FALSE),size = 0.5, col = "black")+
-    layout_rectangular()+
     geom_tippoint(size = 2, fill = "white", shape = 21)+
+    geom_tiplab(color='black', as_ylab = T, align = TRUE)+
+    layout_rectangular()+
     theme_bw(base_size = 10)+
-    theme_tree2(plot.margin=margin(6,50,6,6),
-                legend.position = "top",
-                legend.margin=margin(0,0,0,0),
-                legend.box.margin=margin(-10,-10,-10,-10),
-                legend.spacing.x = unit(0.2, 'cm'),
-                legend.spacing.y = unit(0, 'cm'))+
-    geom_tiplab(color='black', size = 2.75, hjust=-1, align = TRUE)+
-    geom_nodelab(geom='text', color = "#4c4c4c", size = 2.75, hjust=-0.2,
-                 mapping = aes(subset=isTip==FALSE))+
     scale_x_continuous(labels = abs)
 
   tree <- revts(tree)
-
 
   t <- tree$data
   t <- t[order(t$y, decreasing = FALSE), ]
@@ -178,7 +186,6 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean") {
     geom_point(aes(x = dose, y = mean))+
     geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), width = 0)+
     scale_y_continuous(position = "right", breaks = scales::pretty_breaks(n = 5))+
-    # scale_x_continuous(breaks = c(1, 5, 10, 20), labels = c(1, 5, 10, 20))+
     theme_bw(base_size = 10)+
     theme(strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))
 
@@ -186,13 +193,14 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean") {
   q <- es[es$treatment %in% q$treatment, ]
   q$treatment <- factor(q$treatment, levels = rev(tips))
   g2 <- ggplot(data = q)+
-    facet_grid(treatment~replicate+batch)+
+    facet_wrap(facets = treatment~replicate, nrow = length(unique(q$treatment)), switch = "y", scales = "free_y")+
     geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), width = 0, alpha = 0.5)+
     geom_line(aes(x = dose, y = mean))+
     geom_point(aes(x = dose, y = mean))+
-    # scale_x_continuous(breaks = c(1, 5, 10, 20), labels = c(1, 5, 10, 20))+
+    scale_y_continuous(position = "right", breaks = scales::pretty_breaks(n = 3))+
     theme_bw(base_size = 10)+
     theme(legend.position = "none",
+          #axis.text.y = element_blank(),
           strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))
 
 
@@ -204,3 +212,73 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean") {
   return(gs)
 }
 
+
+get_dose_comparison <- function(x) {
+
+  get_dose_pmax <- function(x, s, e) {
+    stats <- c()
+    d <- s[s$dose == x, ]
+    ts <- sort(unique(d$treatment))
+
+    for(i in 1:(length(ts)-1)) {
+      for(j in (i+1):length(ts)) {
+        y_i <- e[,d$g[d$dose == x & d$treatment == ts[i]]]
+        y_j <- e[,d$g[d$dose == x & d$treatment == ts[j]]]
+        u <- y_i-y_j
+        hdi <- get_hdi(vec = u, hdi_level = 0.95)
+
+        p_stat <- get_pmax(x = u)
+
+        stats <- rbind(stats, data.frame(treatment_i = ts[i],
+                                         treatment_j = ts[j],
+                                         contrast = paste0(ts[i], '-vs-', ts[j]),
+                                         dose = x,
+                                         b_L95 = hdi[1],
+                                         b_H95 = hdi[2],
+                                         pmax = p_stat,
+                                         key = paste0(ts[i], '-', ts[j], '-', x)))
+      }
+    }
+    return(stats)
+  }
+
+  e <- rstan::extract(object = o$f, par = "eff_group_mu")$eff_group_mu
+
+  b <- lapply(X = unique(o$x$dose), s = o$s$eff_group_mu, e = e, FUN = get_dose_pmax)
+  b <- do.call(rbind, b)
+  return(b)
+}
+
+
+get_pmax <- function(x) {
+  l <- length(x)
+  return(2*max(sum(x<0)/l, sum(x>0)/l)-1)
+}
+
+# Description:
+# Computes HDI for vector vec and hdi_level (e.g. 0.95)
+# Taken (and renamed) from "Doing Bayesian Analysis", section 25.2.3 R code
+# for computing HDI of a MCMC sample
+get_hdi <- function(vec, hdi_level) {
+  # Computes highest density interval from a sample of representative values,
+  # estimated as shortest credible interval.
+  # Arguments:
+  # sampleVec
+  # is a vector of representative values from a probability distribution.
+  # credMass
+  # is a scalar between 0 and 1, indicating the mass within the credible
+  # interval that is to be estimated.
+  # Value:
+  # HDIlim is a vector containing the limits of the HDI
+  sortedPts <- sort(vec)
+  ciIdxInc <- floor(hdi_level * length(sortedPts))
+  nCIs = length(sortedPts) - ciIdxInc
+  ciWidth = rep(0 , nCIs)
+  for (i in 1:nCIs) {
+    ciWidth[i] = sortedPts[i + ciIdxInc] - sortedPts[i]
+  }
+  HDImin = sortedPts[which.min(ciWidth)]
+  HDImax = sortedPts[which.min(ciWidth) + ciIdxInc]
+  HDIlim = c(HDImin, HDImax)
+  return(HDIlim)
+}

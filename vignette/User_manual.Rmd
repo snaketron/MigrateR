@@ -85,14 +85,34 @@ ggplot(data = o$s$eff_group_mu)+
 
 # Treatment:dose profiles
 
-```{r, fig.width=8, fig.height=5}
+```{r, fig.width=10, fig.height=5}
 get_profiles(x = o)
 ```
 
 
+
+
+# Compare effects at specific doses
+Huge differences in treatment effects at dose = 2, 3 and 4. At dose = 1 and 
+dose = 5, unclear differences in treatment effects.
+
+```{r, fig.width=6, fig.height=4}
+u <- get_dose_comparison(x = o)
+u$pmax <- round(x = u$pmax, digits = 2)
+
+ggplot(data = u)+
+  facet_wrap(facets = ~paste0("dose=", dose))+
+  geom_tile(aes(x = treatment_i, y = treatment_j, fill = pmax), col = "white")+
+  geom_text(aes(x = treatment_i, y = treatment_j, label = pmax), size = 3, col = "black")+
+  scale_fill_distiller(name = expression(pi), palette = "Spectral", limits = c(0, 1))
+```
+
+
+
+
 # PPC
 
-```{r, fig.width=5, fig.height=6}
+```{r, fig.width=6, fig.height=8}
 e <- rstan::extract(object = o$f, par = "y_hat_sample")$y_hat_sample
 e <- reshape2::melt(data = e)
 colnames(e) <- c("iter", "s", "yhat")
@@ -103,8 +123,10 @@ e <- merge(x = e, y = q, all.x = T)
 g <- ggplot()+
   facet_wrap(~paste0(treatment, " (", gsub(pattern = "n", replacement = '', 
                                           x = replicate), ")"), ncol = 3, scales = "free")+
-  geom_sina(data = o$x, aes(x = as.factor(dose), y = sv, col = batch), size = 0.05)+
-  geom_violin(data = e, aes(x = as.factor(dose), y = yhat, linetype = batch), fill = NA, col = "black")+
+  geom_violin(data = e, aes(x = as.factor(dose), y = yhat, linetype = batch), 
+              fill = NA, col = "black", linetype = "dashed")+
+  geom_sina(data = o$x, aes(x = as.factor(dose), y = sv, col = batch), 
+            col = "red", size = 0.3)+
   theme_bw(base_size = 10)+
   theme(legend.position = "none")+
   theme(strip.text.x = element_text(margin = margin(0.02,0,0.02,0, "cm")))+
@@ -113,6 +135,7 @@ g <- ggplot()+
   scale_color_manual(values = c("orange", "steelblue"))
 g
 ```
+
 
 
 # Session Info

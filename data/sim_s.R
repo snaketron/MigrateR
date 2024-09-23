@@ -2,7 +2,7 @@
 eff_r <- c(-4, -2, -0)
 eff_b <- c(0)
 
-eff_d <- c(0, -1, -2, -0.5)
+eff_d <- c(0, -1, -2, -0.5, -0.05)
 eff_t <- c(0, 0.1, 0.5, 1, -0.5, -1) # ratio of dose
 
 x <- c()
@@ -35,7 +35,7 @@ save(d, file = "data/d_severe_rep_effects.RData")
 eff_r <- c(0, 0, 0)
 eff_b <- c(0)
 
-eff_d <- c(0, -1, -2, -0.5)
+eff_d <- c(0, -1, -2, -0.5, -0.05)
 eff_t <- c(0, 0.1, 0.5, 1, -0.5, -1) # ratio of dose
 
 x <- c()

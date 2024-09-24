@@ -1,7 +1,7 @@
 Package: cellvel
 Type: Package
 Title: Quantification of cell migration speed with Bayesian probability models
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",

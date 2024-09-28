@@ -2,8 +2,8 @@
 compare_doses <- function(x, select_ds, select_ts) {
 
   e <- rstan::extract(object = x$f, par = "eff_group_mu")$eff_group_mu
-  ds <- x$s$eff_group_mu$dose
-  ts <- x$s$eff_group_mu$treatment
+  ds <- unique(x$s$eff_group_mu$dose)
+  ts <- unique(x$s$eff_group_mu$treatment)
 
   if(missing(select_ds)==FALSE) {
     if(any(!select_ds %in% ds)) {

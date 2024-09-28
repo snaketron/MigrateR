@@ -75,7 +75,7 @@ o <- cellvel(x = d,
              control = list(mcmc_warmup = 300,
                             mcmc_steps = 700,
                             mcmc_chains = 3,
-                            mcmc_cores = 1,
+                            mcmc_cores = 3,
                             mcmc_algorithm = "NUTS",
                             adapt_delta = 0.9,
                             max_treedepth = 10))
@@ -108,9 +108,26 @@ Huge differences in treatment effects at dose = 2, 3 and 4. At dose = 1 and
 dose = 5, unclear differences in treatment effects.
 
 ```{r, fig.width=6, fig.height=4}
-u <- get_dose_comparison(x = o)
+u <- compare_doses(x = o)
 u$pmax <- round(x = u$pmax, digits = 2)
+u$M <- round(x = u$M, digits = 2)
+```
 
+
+## M
+
+```{r, fig.width=6, fig.height=4}
+ggplot(data = u)+
+  facet_wrap(facets = ~paste0("dose=", dose))+
+  geom_tile(aes(x = treatment_i, y = treatment_j, fill = M), col = "white")+
+  geom_text(aes(x = treatment_i, y = treatment_j, label = M), size = 3, col = "black")+
+  scale_fill_distiller(name = "M", palette = "Spectral")
+```
+
+
+## $\pi$
+
+```{r, fig.width=6, fig.height=4}
 ggplot(data = u)+
   facet_wrap(facets = ~paste0("dose=", dose))+
   geom_tile(aes(x = treatment_i, y = treatment_j, fill = pmax), col = "white")+

@@ -136,8 +136,56 @@ get_summary <- function(x, f) {
 }
 
 
-get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean",
-                         select_ds, select_ts) {
+
+get_boot_profiles <- function(x, gs, hc_dist, hc_link, main_ph) {
+  e <- extract(x$f, par = "eff_group_mu")$eff_group_mu[, gs]
+  e <- e[sample(x = 1:nrow(e), size = min(nrow(e), 1000), replace = FALSE),]
+
+  meta <- o$s$eff_group_mu[, c("g", "treatment", "dose")]
+  meta <- meta[order(meta$g, decreasing = F),]
+  meta <- meta[meta$g %in% gs, ]
+  meta$g <- NULL
+
+  boot_ph <- c()
+  for(i in 1:nrow(e)) {
+    u <- data.frame(g = 1:ncol(e), mu = e[i, ])
+    u <- cbind(u, meta)
+
+    q <- acast(data = u, formula = treatment~dose, value.var = "mu")
+
+    # hclust
+    hc <- hclust(dist(q, method = hc_dist), method = hc_link)
+    ph <- as.phylo(x = hc)
+
+    if(i == 1) {
+      boot_ph <- ph
+    }
+    else {
+      boot_ph <- c(boot_ph, ph)
+    }
+  }
+  clades <- prop.clades(phy = main_ph,
+              x = boot_ph,
+              part = NULL,
+              rooted = is.rooted(main_ph))
+
+  # add bootstrap
+  main_ph$node.label <- clades
+
+  # b = 0 for these nodes
+  na_nodes <- which(is.na(main_ph$node.label))
+  if(length(na_nodes)!=0) {
+    main_ph$node.label[na_nodes] <- 0
+  }
+  return(list(main_ph = main_ph, boot_ph = boot_ph))
+}
+
+
+get_profiles <- function(x,
+                         hc_link = "average",
+                         hc_dist = "euclidean",
+                         select_ds,
+                         select_ts) {
   eg <- x$s$eff_group_mu
   es <- x$s$eff_sample
 
@@ -163,13 +211,20 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean",
   hc <- hclust(dist(q, method = hc_dist), method = hc_link)
   ph <- as.phylo(x = hc)
 
-  tree <- ggtree(ph, linetype='solid')+
+
+  bt <- get_boot_profiles(x = x, gs = eg$g, hc_dist = hc_dist,
+                          hc_link = hc_link, main_ph = ph)
+
+
+  tree <- ggtree(bt$main, linetype='solid')+
     geom_point2(mapping = aes(subset=isTip==FALSE),size = 0.5, col = "black")+
     geom_tippoint(size = 2, fill = "white", shape = 21)+
     geom_tiplab(color='black', as_ylab = T, align = TRUE)+
     layout_rectangular()+
     theme_bw(base_size = 10)+
-    scale_x_continuous(labels = abs)
+    scale_x_continuous(labels = abs)+
+    geom_nodelab(geom='text', color = "#4c4c4c" ,size = 2.75, hjust=-0.2,
+                 mapping = aes(label=label,subset=isTip==FALSE))
 
   tree <- revts(tree)
 
@@ -199,9 +254,7 @@ get_profiles <- function(x, hc_link = "average", hc_dist = "euclidean",
     geom_point(aes(x = dose, y = mean))+
     scale_y_continuous(position = "right", breaks = scales::pretty_breaks(n = 3))+
     theme_bw(base_size = 10)+
-    theme(legend.position = "none",
-          #axis.text.y = element_blank(),
-          strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))
+    theme(legend.position = "none", strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))
 
 
   gs <- (tree|g|g2)+

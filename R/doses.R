@@ -1,44 +1,61 @@
 
-compare_doses <- function(x) {
+compare_doses <- function(x, select_ds, select_ts) {
 
-  get_dose_pmax <- function(x, s, e) {
-    stats <- c()
-    d <- s[s$dose == x, ]
-    ts <- sort(unique(d$treatment))
+  e <- rstan::extract(object = x$f, par = "eff_group_mu")$eff_group_mu
+  ds <- x$s$eff_group_mu$dose
+  ts <- x$s$eff_group_mu$treatment
 
-    for(i in 1:(length(ts)-1)) {
-      for(j in (i+1):length(ts)) {
-        y_i <- e[,d$g[d$dose == x & d$treatment == ts[i]]]
-        y_j <- e[,d$g[d$dose == x & d$treatment == ts[j]]]
-        u <- y_i-y_j
-
-        Mu <- mean(u)
-        hdi <- get_hdi(vec = u, hdi_level = 0.95)
-
-        p_stat <- get_pmax(x = u)
-
-        stats <- rbind(stats, data.frame(treatment_i = ts[i],
-                                         treatment_j = ts[j],
-                                         contrast = paste0(ts[i], '-vs-', ts[j]),
-                                         dose = x,
-                                         M = Mu,
-                                         L95 = hdi[1],
-                                         H95 = hdi[2],
-                                         pmax = p_stat,
-                                         key = paste0(ts[i], '-', ts[j], '-', x)))
-      }
+  if(missing(select_ds)==FALSE) {
+    if(any(!select_ds %in% ds)) {
+      stop("selected doses not found in data")
     }
-    return(stats)
+    ds <- ds[ds %in% select_ds]
   }
 
-  e <- rstan::extract(object = o$f, par = "eff_group_mu")$eff_group_mu
+  if(missing(select_ts)==FALSE) {
+    if(any(!select_ts %in% ts)) {
+      stop("selected treatments not found in data")
+    }
+    ts <- ts[ts %in% select_ts]
+  }
 
-  b <- lapply(X = unique(o$x$dose),
-              s = o$s$eff_group_mu,
-              e = e,
-              FUN = get_dose_pmax)
+  s <- x$s$eff_group_mu
+  s <- s[s$treatment %in% ts & s$dose %in% ds,]
+
+  b <- lapply(X = ds, s = s, e = e, FUN = get_dose_pmax)
   b <- do.call(rbind, b)
   return(b)
+}
+
+
+get_dose_pmax <- function(x, s, e) {
+  stats <- c()
+  d <- s[s$dose == x, ]
+  ts <- sort(unique(d$treatment))
+
+  for(i in 1:(length(ts)-1)) {
+    for(j in (i+1):length(ts)) {
+      y_i <- e[,d$g[d$dose == x & d$treatment == ts[i]]]
+      y_j <- e[,d$g[d$dose == x & d$treatment == ts[j]]]
+      u <- y_i-y_j
+
+      Mu <- mean(u)
+      hdi <- get_hdi(vec = u, hdi_level = 0.95)
+
+      p_stat <- get_pmax(x = u)
+
+      stats <- rbind(stats, data.frame(treatment_i = ts[i],
+                                       treatment_j = ts[j],
+                                       contrast = paste0(ts[i], '-vs-', ts[j]),
+                                       dose = x,
+                                       M = Mu,
+                                       L95 = hdi[1],
+                                       H95 = hdi[2],
+                                       pmax = p_stat,
+                                       key = paste0(ts[i], '-', ts[j], '-', x)))
+    }
+  }
+  return(stats)
 }
 
 

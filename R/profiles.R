@@ -1,49 +1,4 @@
 
-
-get_boot_profiles <- function(x, gs, hc_dist, hc_link, main_ph) {
-  e <- extract(x$f, par = "eff_group_mu")$eff_group_mu[, gs]
-  e <- e[sample(x = 1:nrow(e), size = min(nrow(e), 1000), replace = FALSE),]
-
-  meta <- o$s$eff_group_mu[, c("g", "treatment", "dose")]
-  meta <- meta[order(meta$g, decreasing = F),]
-  meta <- meta[meta$g %in% gs, ]
-  meta$g <- NULL
-
-  boot_ph <- c()
-  for(i in 1:nrow(e)) {
-    u <- data.frame(g = 1:ncol(e), mu = e[i, ])
-    u <- cbind(u, meta)
-
-    q <- acast(data = u, formula = treatment~dose, value.var = "mu")
-
-    # hclust
-    hc <- hclust(dist(q, method = hc_dist), method = hc_link)
-    ph <- as.phylo(x = hc)
-
-    if(i == 1) {
-      boot_ph <- ph
-    }
-    else {
-      boot_ph <- c(boot_ph, ph)
-    }
-  }
-  clades <- prop.clades(phy = main_ph,
-                        x = boot_ph,
-                        part = NULL,
-                        rooted = is.rooted(main_ph))
-
-  # add bootstrap
-  main_ph$node.label <- clades
-
-  # b = 0 for these nodes
-  na_nodes <- which(is.na(main_ph$node.label))
-  if(length(na_nodes)!=0) {
-    main_ph$node.label[na_nodes] <- 0
-  }
-  return(list(main_ph = main_ph, boot_ph = boot_ph))
-}
-
-
 get_profiles <- function(x,
                          hc_link = "average",
                          hc_dist = "euclidean",
@@ -62,7 +17,7 @@ get_profiles <- function(x,
 
   if(missing(select_ts)==FALSE) {
     if(any(!select_ts %in% unique(eg$treatment))) {
-      stop("selected doses not found in data")
+      stop("selected treatments not found in data")
     }
     eg <- eg[eg$treatment %in% select_ts, ]
     es <- es[es$treatment %in% select_ts, ]
@@ -126,3 +81,49 @@ get_profiles <- function(x,
   gs
   return(gs)
 }
+
+
+
+get_boot_profiles <- function(x, gs, hc_dist, hc_link, main_ph) {
+  e <- extract(x$f, par = "eff_group_mu")$eff_group_mu[, gs]
+  e <- e[sample(x = 1:nrow(e), size = min(nrow(e), 1000), replace = FALSE),]
+
+  meta <- x$s$eff_group_mu[, c("g", "treatment", "dose")]
+  meta <- meta[order(meta$g, decreasing = F),]
+  meta <- meta[meta$g %in% gs, ]
+  meta$g <- NULL
+
+  boot_ph <- c()
+  for(i in 1:nrow(e)) {
+    u <- data.frame(g = 1:ncol(e), mu = e[i, ])
+    u <- cbind(u, meta)
+
+    q <- acast(data = u, formula = treatment~dose, value.var = "mu")
+
+    # hclust
+    hc <- hclust(dist(q, method = hc_dist), method = hc_link)
+    ph <- as.phylo(x = hc)
+
+    if(i == 1) {
+      boot_ph <- ph
+    }
+    else {
+      boot_ph <- c(boot_ph, ph)
+    }
+  }
+  clades <- prop.clades(phy = main_ph,
+                        x = boot_ph,
+                        part = NULL,
+                        rooted = is.rooted(main_ph))
+
+  # add bootstrap
+  main_ph$node.label <- clades
+
+  # b = 0 for these nodes
+  na_nodes <- which(is.na(main_ph$node.label))
+  if(length(na_nodes)!=0) {
+    main_ph$node.label[na_nodes] <- 0
+  }
+  return(list(main_ph = main_ph, boot_ph = boot_ph))
+}
+

@@ -4,7 +4,7 @@
 \alias{compare_doses}
 \title{Compare treatment effect at specific doses (cellvel results)}
 \usage{
-compare_doses(x)
+compare_doses(x, select_ds, select_ts)
 }
 \value{
 A data.frame with the following data in each row (comparison):
@@ -20,33 +20,35 @@ migration effects of treatment_i and treatment_j
 }
 }
 \description{
-The functions compares the posterior distributions of the cell migration
-effects of each treatment and dose.
+The function \code{compare_doses} compares the posterior distributions of
+the cell migration effects of each treatment and dose.
 }
 \details{
-At a given dose, it compares pairs of treatments, i and j. For the comparison
-we extract the posterior distributions of their cell migration effects at the
-given dose, and then compute an absolute difference between the posteriors.
-The result is another posterior distribution (\eqn{\gamma}), with L95 and H95
-as the lower and upper bounds of the 95\% highest density interval of
-\eqn{\gamma}.
+The main input, \code{x}, of \code{compare_doses} is the output object from
+the function \code{cellvel}. Furthermore, the user can select a subset of
+the treatments (input \code{select_ts}, and doses (input \code{select_ds}).
 
-\eqn{\pi} is estimated as:
+At a given dose, \code{compare_doses} compares pairs of treatments, i and j.
+For the comparison we extract the posterior distributions of their cell
+migration effects at the given dose, and then compute an absolute difference
+between the posteriors. The result is another posterior distribution
+(\eqn{\gamma}), with L95 and H95 as the lower and upper bounds of the 95\%
+highest density interval of \eqn{\gamma}.
 
-\eqn{\pi=2\cdot\max{(\int_{-\infty}^{0} \gamma, \int_{0}^{+\infty} \gamma)}-1}.
+\eqn{\pi} is estimated as: \eqn{\pi=2\cdot\max{(\int_{-\infty}^{0} \gamma,
+\int_{0}^{+\infty} \gamma)}-1}.
 
 For treatment groups, i and j, where \eqn{\gamma<0} and the 95\% HDIs of
 \eqn{\gamma} lie mostly or completely below 0 (0 = null effect), we have
 strong evidence of lower cell migration effect in treatment i compared to
-j at the given dose. On the other hand, for treatment groups, i and j,
-where \eqn{\gamma} and the 95\% HDI of \eqn{\gamma} lie mostly or completely
-above 0, we have strong evidence of higher cell migration effect in treatment
-i compared to j. Distributions with the 95\% HDIs more or less centered around
-0 indicate that there is no evidence for a clear differnce in the cell migration
-effects between the treatments. Note that unclear evidence is not equivalent
-to no change, because for a treatment group with \eqn{\gamma\approx 0} we may
-also have a wide 95\% HDI, including possibilities for positive or negative
-change.
+j at the given dose. On the other hand, for treatment groups, i and j, where
+\eqn{\gamma} and the 95\% HDI of \eqn{\gamma} lie mostly or completely above 0,
+we have strong evidence of higher cell migration effect in treatment i compared
+to j. Distributions with the 95\% HDIs more or less centered around 0 indicate
+that there is no evidence for a clear differnce in the cell migration effects
+between the treatments. Note that unclear evidence is not equivalent to no
+change, because for a treatment group with \eqn{\gamma\approx 0} we may also
+have a wide 95\% HDI, including possibilities for positive or negative change.
 }
 \examples{
 data(d, package = "compare_doses")

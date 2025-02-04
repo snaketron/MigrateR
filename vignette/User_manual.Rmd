@@ -31,13 +31,13 @@ ggplot2::theme_set(new = theme_bw(base_size = 10))
 # Data (raw)
 In this vignette we will use simulated data: 
   
-  * 6 treatments (chemical compounds): t-1, t-2, ..., t-6
+  * 6 compounds (chemical): c-1, c-2, ..., c-6
   * 5 doses: 1, 2, 3, 4 and 5
-  * 3 replicates: r-1, r-2 and r-3
-  * 1 batch: b-1
+  * 3 sample: s-1, s-2 and s-3
+  * 2 batches: b-1 and b-2
 
-In each sample (treatment x dose x replicate), we have 20 observations (cell 
-velocities $v$)
+In each sample from a combination of compound x dose x batch, we have 
+20 observations (cell velocities $v$)
 
 ```{r}
 data("d_clean", package = "cellvel")
@@ -46,8 +46,8 @@ knitr::kable(d[1:10,], row.names = F, digits = 2)
 
 ```{r, fig.width=6, fig.height=3}
 ggplot(data = d)+
-  facet_wrap(facets = ~paste0("t=", treatment, ", b=", batch), scales = "free_y")+
-  geom_sina(aes(x = as.factor(dose), col = replicate, y= v), size = 0.5)+
+  facet_wrap(facets = ~paste0("c=", compound), scales = "free_y")+
+  geom_sina(aes(x = as.factor(dose), col = batch, y= v), size = 0.5)+
   theme_bw()+
   theme(strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
   xlab(label = "dose")
@@ -58,8 +58,8 @@ ggplot(data = d)+
 
 ```{r, fig.width=6, fig.height=3}
 ggplot(data = d)+
-  facet_wrap(facets = ~paste0("t=", treatment, ", b=", batch), scales = "free_y")+
-  geom_sina(aes(x = as.factor(dose), col = replicate, y= v/max(v)), size = 0.5)+
+  facet_wrap(facets = ~paste0("c=", compound), scales = "free_y")+
+  geom_sina(aes(x = as.factor(dose), col = batch, y= v/max(v)), size = 0.5)+
   theme_bw()+
   theme(strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
   xlab(label = "dose")+
@@ -73,39 +73,40 @@ ggplot(data = d)+
 o <- cellvel(x = d,
              model = "M",
              control = list(mcmc_warmup = 300,
-                            mcmc_steps = 700,
-                            mcmc_chains = 3,
-                            mcmc_cores = 3,
+                            mcmc_steps = 1300,
+                            mcmc_chains = 4,
+                            mcmc_cores = 4,
                             mcmc_algorithm = "NUTS",
                             adapt_delta = 0.9,
                             max_treedepth = 10))
 ```
 
 
-# Treatment:dose specific effects
+# Compound:dose specific effects
 
 ```{r, fig.width=6, fig.height=3}
-ggplot(data = o$s$eff_group_mu)+
-  geom_line(aes(x = dose, y = mean, col = treatment))+
-  geom_point(aes(x = dose, y = mean, col = treatment))+
+ggplot(data = o$s$eff_group)+
+  geom_line(aes(x = dose, y = mean, col = compound))+
+  geom_point(aes(x = dose, y = mean, col = compound))+
   geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5., 
-                    col = treatment), width = 0.04)
+                    col = compound), width = 0.04)
 ```
 
 
 
-# Treatment:dose profiles
+# Compound:dose profiles
 
-```{r, fig.width=10, fig.height=5}
-get_profiles(x = o)+patchwork::plot_layout(widths = c(1, 1, 3))
+```{r, fig.width=8, fig.height=5}
+get_profiles(x = o)+
+  patchwork::plot_layout(widths = c(1, 1, 2.5))
 ```
 
 
 
 
 # Compare effects at specific doses
-Huge differences in treatment effects at dose = 2, 3 and 4. At dose = 1 and 
-dose = 5, unclear differences in treatment effects.
+Huge differences in compound effects at dose = 2, 3 and 4. At dose = 1 and 
+dose = 5, unclear differences in compound effects.
 
 ```{r, fig.width=6, fig.height=4}
 u <- compare_doses(x = o)
@@ -144,13 +145,14 @@ ggplot(data = u)+
 e <- rstan::extract(object = o$f, par = "y_hat_sample")$y_hat_sample
 e <- reshape2::melt(data = e)
 colnames(e) <- c("iter", "s", "yhat")
-q <- o$x[, c("s", "treatment", "dose", "group", "batch", "replicate")]
+q <- o$x[, c("s", "compound", "dose", "group", "batch")]
 q <- q[duplicated(q)==F,]
 e <- merge(x = e, y = q, all.x = T)
 
 g <- ggplot()+
-  facet_wrap(~paste0(treatment, " (", gsub(pattern = "n", replacement = '', 
-                                          x = replicate), ")"), ncol = 3, scales = "free")+
+  facet_wrap(~paste0(compound, " (", gsub(pattern = "n", replacement = '', 
+                                          x = batch), ")"), 
+             ncol = 3, scales = "free")+
   geom_violin(data = e, aes(x = as.factor(dose), y = yhat, linetype = batch), 
               fill = NA, col = "red", linetype = "dashed")+
   geom_sina(data = o$x, aes(x = as.factor(dose), y = sv, col = batch), 

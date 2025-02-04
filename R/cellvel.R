@@ -7,7 +7,7 @@
 #' of model parameters (means, medians, 95% credible intervals, etc.).
 #'
 #' The input x must have cell entries as rows and the following columns:
-#' * replicate = id of the biological replicate (e.g. rep1, rep2, rep3, ...)
+#' * sample = unique id of the biological replicate (e.g. S1, S2, S3, ...)
 #' * batch = id of the experimental batch (e.g. plate X, plat Y, ...)
 #' * compound = character id of the treatment compound
 #' * dose = numeric
@@ -48,27 +48,17 @@ get_fit <- function(x, control, model) {
   message("model fitting... \n")
 
   # transform data
-  q <- x[, c("s", "g", "r", "b")]
+  q <- x[, c("s", "g", "b")]
   q <- q[duplicated(q)==F, ]
   q <- q[order(q$s, decreasing = F),]
 
   if(model == "M") {
     M <- stanmodels$M
   }
-  if(model == "Mp") {
-    M <- stanmodels$Mp
-  }
-  if(model == "Ms") {
-    M <- stanmodels$Ms
-  }
-  if(model == "Ms_pro") {
-    M <- stanmodels$Ms_pro
-  }
 
   # fit model
   fit <- sampling(object = M,
-                  data = list(y = x$sv, N = nrow(x), s = x$s,
-                              g = q$g, r = q$r, b = q$b),
+                  data = list(y = x$sv, N = nrow(x), s = x$s, g = q$g, b = q$b),
                   chains = control$mcmc_chains,
                   cores = control$mcmc_cores,
                   iter = control$mcmc_steps,
@@ -86,39 +76,29 @@ get_summary <- function(x, f) {
   message("computing posterior summaries...\n")
 
   # get unique meta data
-  l <- x[, c("s", "sample", "g", "group", "treatment", "dose",
-             "r", "replicate", "b", "batch")]
+  l <- x[, c("s", "sample", "g", "group", "compound", "dose", "b", "batch")]
   l_s <- l[duplicated(l)==FALSE, ]
-  l_r <- l[duplicated(l[,c("r","replicate")])==FALSE,
-           c("r","replicate")]
-  l_p <- l[duplicated(l[,c("b","batch")])==FALSE,
-           c("b","batch")]
+  l_b <- l[duplicated(l[,c("b","batch")])==FALSE, c("b", "batch")]
   l_g <- l[duplicated(l[,c("g","group")])==FALSE,
-           c("g","group", "treatment", "dose",
-             "r","replicate","b","batch")]
-
-  # par: eff_rep
-  eff_rep <- data.frame(summary(f, par = "eff_rep")$summary)
-  eff_rep$r <- 1:nrow(eff_rep)
-  eff_rep <- merge(x = eff_rep, y = l_r, by = "r", all.x = TRUE)
+           c("g", "group", "compound", "dose", "b", "batch")]
 
   # par: eff_batch
   eff_batch <- data.frame(summary(f, par = "eff_batch")$summary)
   eff_batch$b <- 1:nrow(eff_batch)
-  eff_batch <- merge(x = eff_batch, y = l_p, by = "b", all.x = TRUE)
+  eff_batch <- merge(x = eff_batch, y = l_b, by = "b", all.x = TRUE)
 
-  # par: eff_group_mu
-  eff_group_mu <- data.frame(summary(f, par = "eff_group_mu")$summary)
-  eff_group_mu$g <- 1:nrow(eff_group_mu)
-  eff_group_mu <- merge(x = eff_group_mu, y = l_g, by = "g", all.x = TRUE)
+  # par: eff_group
+  eff_group <- data.frame(summary(f, par = "eff_group")$summary)
+  eff_group$g <- 1:nrow(eff_group)
+  eff_group <- merge(x = eff_group, y = l_g, by = "g", all.x = TRUE)
 
   # par: eff_sample
   eff_sample <- data.frame(summary(f, par = "eff_sample")$summary)
   eff_sample$s <- 1:nrow(eff_sample)
   eff_sample <- merge(x = eff_sample, y = l_s, by = "s", all.x = TRUE)
 
-  # par: eff_group_sigma
-  eff_group_sigma <- data.frame(summary(f, par = "eff_group_sigma")$summary)
+  # par: sigma_group
+  sigma_group <- data.frame(summary(f, par = "sigma_group")$summary)
 
   # par: mu
   mu <- data.frame(summary(f, par = "mu")$summary)
@@ -130,8 +110,10 @@ get_summary <- function(x, f) {
   yhat$s <- 1:nrow(yhat)
   yhat <- merge(x = yhat, y = l_s, by = "s", all.x = TRUE)
 
-  return(list(eff_rep = eff_rep, eff_batch = eff_batch,
-              eff_group_mu = eff_group_mu, eff_sample = eff_sample,
-              eff_group_sigma = eff_group_sigma, mu = mu, yhat = yhat))
+  return(list(eff_batch = eff_batch,
+              eff_group = eff_group, 
+              eff_sample = eff_sample,
+              sigma_group = sigma_group, 
+              mu = mu, yhat = yhat))
 }
 

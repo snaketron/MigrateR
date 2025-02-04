@@ -15,14 +15,14 @@ process_input <- function(x) {
   }
 
   check_cols <- function(x) {
-    if(!"treatment" %in% colnames(x)) {
-      stop("x does not have a column treatment")
+    if(!"compound" %in% colnames(x)) {
+      stop("x does not have a column compound")
     }
     if(!"dose" %in% colnames(x)) {
       stop("x does not have a column dose")
     }
-    if(!"replicate" %in% colnames(x)) {
-      stop("x does not have a column replicate")
+    if(!"sample" %in% colnames(x)) {
+      stop("x does not have a column sample")
     }
     if(!"batch" %in% colnames(x)) {
       stop("x does not have a column batch")
@@ -31,14 +31,14 @@ process_input <- function(x) {
       stop("x does not have a column v")
     }
 
-    if(is.character(x[,"treatment"])==FALSE) {
-      stop("column treatment must be character")
+    if(is.character(x[,"compound"])==FALSE) {
+      stop("column compound must be character")
     }
-    if(is.numeric(x[,"dose"])==FALSE) {
+    if(is.character(x[,"dose"])==FALSE) {
       stop("column dose must be character")
     }
-    if(is.character(x[,"replicate"])==FALSE) {
-      stop("column replicate must be character")
+    if(is.character(x[,"sample"])==FALSE) {
+      stop("column sample must be character")
     }
     if(is.character(x[,"batch"])==FALSE) {
       stop("column batch must be character")
@@ -47,8 +47,8 @@ process_input <- function(x) {
       stop("column v must be numeric")
     }
 
-    if(any(is.na(x[,"treatment"]))) {
-      stop("column treatment contains NAs")
+    if(any(is.na(x[,"compound"]))) {
+      stop("column compound contains NAs")
     }
     if(any(is.na(x[,"dose"]))) {
       stop("column dose contains NAs")
@@ -56,8 +56,8 @@ process_input <- function(x) {
     if(any(is.na(x[,"batch"]))) {
       stop("column batch contains NAs")
     }
-    if(any(is.na(x[,"replicate"]))) {
-      stop("column replicate contains NAs")
+    if(any(is.na(x[,"sample"]))) {
+      stop("column sample contains NAs")
     }
     if(any(is.na(x[,"v"]))) {
       stop("column v contains NAs")
@@ -67,12 +67,11 @@ process_input <- function(x) {
   check_x(x=x)
   check_cols(x=x)
 
-  x$group <- paste0(x$treatment, '|', x$dose)
+  x$group <- paste0(x$compound, '|', x$dose)
   x$g <- as.numeric(as.factor(x$group))
-  x$r <- as.numeric(as.factor(x$replicate))
   x$b <- as.numeric(as.factor(x$batch))
   x$sv <- x$v/max(x$v)
-  x$sample <- paste0(x$batch, '|', x$replicate, '|', x$group)
+  x$sample <- paste0(x$batch, '|', x$sample, '|', x$group)
   x$s <- as.numeric(as.factor(x$sample))
   return(x)
 }
@@ -102,7 +101,6 @@ process_control <- function(control_in) {
   for (i in seq_len(length(control_in))) {
     control[[ns[i]]] <- control_in[[ns[i]]]
   }
-
 
   check_mcmc_steps(mcmc_steps = control$mcmc_steps,
                    mcmc_warmup = control$mcmc_warmup)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{get_profiles}
 \alias{get_profiles}
-\title{Visualization of treatment effect profiles (cellvel results)}
+\title{Visualization of compound effect profiles (cellvel results)}
 \usage{
 get_profiles(x,
              hc_link = "average",
@@ -13,25 +13,25 @@ get_profiles(x,
 \value{
 A patchwork plot with:
 \itemize{
-\item A = hierarchical dendrogram comparing treatment effects curves
-\item B = mean effects on cell migration of treatment and dose with 95\%
+\item A = hierarchical dendrogram comparing compound effects curves
+\item B = mean effects on cell migration of compound and dose with 95\%
 credible intervals
-\item C = mean effects on cell migration of treatment and dose in each
+\item C = mean effects on cell migration of compound and dose in each
 replicate with 95\% credible intervals
 }
 }
 \description{
 The functions takes as a main input (\code{x}) the output of the function
-cellvel. The user can select a subset of the treatments (with input
+cellvel. The user can select a subset of the compounds (with input
 \code{select_ts}, and doses (with input \code{select_ds}). To construct a
 hierarchical dendrogram one has to select a distance metric, \code{hc_dist},
 (e.g. \code{hc_dist} = "euclidean"); and a linkage function, \code{hc_link},
 (e.g. \code{hc_link} = "average").
 }
 \details{
-The function \code{get_profiles} visualizes the treatment effect profiles,
-i.e. which treatments similar effects of cell migration across the different
-doses? These treatments are clustered together in the hierarchical dendrogram.
+The function \code{get_profiles} visualizes the compound effect profiles,
+i.e. which compounds similar effects of cell migration across the different
+doses? These compounds are clustered together in the hierarchical dendrogram.
 }
 \examples{
 data(d, package = "get_profiles")

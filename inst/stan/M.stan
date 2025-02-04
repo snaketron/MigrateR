@@ -2,37 +2,32 @@ data {
   int<lower=0> N; // number of cells
   vector[N] y;    // cell velocity for N cells
   int s [N];      // sample ID
-  int g [max(s)]; // group: treatment x dose combination
-  int r [max(s)]; // replicate: index values 1, 2 or 3
-  int b [max(s)]; // batch: index values 1 or 2
+  int g [max(s)]; // group ID: treatment x dose
+  int b [max(s)]; // replicate ID
 }
 
 parameters {
-  vector [max(r)] eff_rep;
-  vector [max(b)] eff_batch;
-  vector [max(g)] eff_group_mu;
-  vector [max(s)] eff_z;
-  real <lower=0> eff_group_sigma;
   real <lower=0> alpha;
+  vector [max(b)] eff_batch;
+  vector [max(g)] eff_group;
+  real <lower=0> sigma_group;
+  vector [max(s)] z_sample;
 }
 
 transformed parameters {
   vector<lower=0> [max(s)] mu;
   vector [max(s)] eff_sample;
 
-  eff_sample = eff_group_mu[g] + eff_group_sigma * eff_z;
-
-  mu =  exp(eff_rep[r] + eff_batch[b] + eff_sample);
+  eff_sample = eff_group[g] + sigma_group * z_sample;
+  mu =  exp(eff_sample + eff_batch[b]);
 }
 
 model {
-  eff_rep ~ normal(-2.5, 1.5);
-  eff_batch ~ normal(0, 0.5);
-  eff_group_mu ~ normal(0, 1);
-  eff_group_sigma ~ normal(0,0.5);
-  eff_z ~ std_normal();
-
   alpha ~ gamma(0.01, 0.01);
+  eff_batch ~ normal(-2.5, 1.5);
+  eff_group ~ normal(0, 1);
+  sigma_group ~ normal(0, 0.5);
+  z_sample ~ std_normal();
 
   y ~ gamma(alpha, alpha ./ mu[s]);
 }

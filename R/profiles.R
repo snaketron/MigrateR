@@ -4,7 +4,7 @@ get_profiles <- function(x,
                          hc_dist = "euclidean",
                          select_ds,
                          select_ts) {
-  eg <- x$s$eff_group_mu
+  eg <- x$s$eff_group
   es <- x$s$eff_sample
 
   if(missing(select_ds)==FALSE) {
@@ -16,14 +16,14 @@ get_profiles <- function(x,
   }
 
   if(missing(select_ts)==FALSE) {
-    if(any(!select_ts %in% unique(eg$treatment))) {
-      stop("selected treatments not found in data")
+    if(any(!select_ts %in% unique(eg$compound))) {
+      stop("selected compounds not found in data")
     }
-    eg <- eg[eg$treatment %in% select_ts, ]
-    es <- es[es$treatment %in% select_ts, ]
+    eg <- eg[eg$compound %in% select_ts, ]
+    es <- es[es$compound %in% select_ts, ]
   }
 
-  q <- acast(data = eg, formula = treatment~dose, value.var = "mean")
+  q <- acast(data = eg, formula = compound~dose, value.var = "mean")
 
   # hclust
   hc <- hclust(dist(q, method = hc_dist), method = hc_link)
@@ -51,28 +51,36 @@ get_profiles <- function(x,
   tips <- t$label[t$isTip==TRUE]
 
   q <- eg
-  q$treatment <- factor(q$treatment, levels = rev(tips))
+  q$compound <- factor(q$compound, levels = rev(tips))
 
   g <- ggplot(data = q)+
-    facet_grid(treatment~., switch = "y")+
+    facet_grid(compound~., switch = "y")+
     geom_hline(yintercept = 0, linetype = "dashed", col = "gray")+
     geom_point(aes(x = dose, y = mean))+
-    geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), width = 0)+
-    scale_y_continuous(position = "right", breaks = scales::pretty_breaks(n = 5))+
+    geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., 
+                      ymax = X97.5.), width = 0)+
+    scale_y_continuous(position = "right", 
+                       breaks = scales::pretty_breaks(n = 5))+
     theme_bw(base_size = 10)+
-    theme(strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))
+    theme(strip.text.y = element_text(
+      margin = margin(0.01,0.01,0.01,0.01, "cm")))
 
 
-  q <- es[es$treatment %in% q$treatment, ]
-  q$treatment <- factor(q$treatment, levels = rev(tips))
+  q <- es[es$compound %in% q$compound, ]
+  q$compound <- factor(q$compound, levels = rev(tips))
   g2 <- ggplot(data = q)+
-    facet_wrap(facets = treatment~replicate, nrow = length(unique(q$treatment)), switch = "y", scales = "free_y")+
-    geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), width = 0, alpha = 0.5)+
+    facet_wrap(facets = compound~batch, 
+               nrow = length(unique(q$compound)), 
+               switch = "y", scales = "free_y")+
+    geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), 
+                  width = 0, alpha = 0.5)+
     geom_line(aes(x = dose, y = mean))+
     geom_point(aes(x = dose, y = mean))+
-    scale_y_continuous(position = "right", breaks = scales::pretty_breaks(n = 3))+
+    scale_y_continuous(position = "right", 
+                       breaks = scales::pretty_breaks(n = 3))+
     theme_bw(base_size = 10)+
-    theme(legend.position = "none", strip.text.y = element_text(margin = margin(0.01,0.01,0.01,0.01, "cm")))
+    theme(legend.position = "none", strip.text.y = element_text(
+      margin = margin(0.01,0.01,0.01,0.01, "cm")))
 
 
   gs <- (tree|g|g2)+
@@ -85,10 +93,10 @@ get_profiles <- function(x,
 
 
 get_boot_profiles <- function(x, gs, hc_dist, hc_link, main_ph) {
-  e <- extract(x$f, par = "eff_group_mu")$eff_group_mu[, gs]
+  e <- extract(x$f, par = "eff_group")$eff_group[, gs]
   e <- e[sample(x = 1:nrow(e), size = min(nrow(e), 1000), replace = FALSE),]
 
-  meta <- x$s$eff_group_mu[, c("g", "treatment", "dose")]
+  meta <- x$s$eff_group[, c("g", "compound", "dose")]
   meta <- meta[order(meta$g, decreasing = F),]
   meta <- meta[meta$g %in% gs, ]
   meta$g <- NULL
@@ -98,7 +106,7 @@ get_boot_profiles <- function(x, gs, hc_dist, hc_link, main_ph) {
     u <- data.frame(g = 1:ncol(e), mu = e[i, ])
     u <- cbind(u, meta)
 
-    q <- acast(data = u, formula = treatment~dose, value.var = "mu")
+    q <- acast(data = u, formula = compound~dose, value.var = "mu")
 
     # hclust
     hc <- hclust(dist(q, method = hc_dist), method = hc_link)

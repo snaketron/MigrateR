@@ -27,10 +27,10 @@ with posterior predictive check; 4) s = summary of model parameters
 \details{
 The input x must have cell entries as rows and the following columns:
 \itemize{
-\item replicate = character id of biological replicate (rep1, rep2, rep3, etc.)
-\item batch = character id of experimental batch (plate x, plat y, etc.)
+\item sample = character of sample ID (s1, s2, s3, etc.)
+\item batch = character id of experimental batch (b1, b2, b3, etc.)
 \item compound = character treatment compound (A, B, C, etc.)
-\item dose = numeric dose e.g. mmol (0, 1, 5, 10, etc.)
+\item dose = character dose e.g. mmol (0, 1, 5, 10, low, high, mid, etc.)
 \item v = numeric cell speed
 
 The input list named \code{control} confures the Markov Chain Monte Carlo

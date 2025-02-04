@@ -1,9 +1,9 @@
 
 compare_doses <- function(x, select_ds, select_ts) {
 
-  e <- rstan::extract(object = x$f, par = "eff_group_mu")$eff_group_mu
-  ds <- unique(x$s$eff_group_mu$dose)
-  ts <- unique(x$s$eff_group_mu$treatment)
+  e <- rstan::extract(object = x$f, par = "eff_group")$eff_group
+  ds <- unique(x$s$eff_group$dose)
+  ts <- unique(x$s$eff_group$treatment)
 
   if(missing(select_ds)==FALSE) {
     if(any(!select_ds %in% ds)) {
@@ -19,7 +19,7 @@ compare_doses <- function(x, select_ds, select_ts) {
     ts <- ts[ts %in% select_ts]
   }
 
-  s <- x$s$eff_group_mu
+  s <- x$s$eff_group
   s <- s[s$treatment %in% ts & s$dose %in% ds,]
 
   b <- lapply(X = ds, s = s, e = e, FUN = get_dose_pmax)
@@ -69,16 +69,6 @@ get_pmax <- function(x) {
 # Taken (and renamed) from "Doing Bayesian Analysis", section 25.2.3 R code
 # for computing HDI of a MCMC sample
 get_hdi <- function(vec, hdi_level) {
-  # Computes highest density interval from a sample of representative values,
-  # estimated as shortest credible interval.
-  # Arguments:
-  # sampleVec
-  # is a vector of representative values from a probability distribution.
-  # credMass
-  # is a scalar between 0 and 1, indicating the mass within the credible
-  # interval that is to be estimated.
-  # Value:
-  # HDIlim is a vector containing the limits of the HDI
   sortedPts <- sort(vec)
   ciIdxInc <- floor(hdi_level * length(sortedPts))
   nCIs = length(sortedPts) - ciIdxInc

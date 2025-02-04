@@ -120,8 +120,9 @@ u$M <- round(x = u$M, digits = 2)
 ```{r, fig.width=6, fig.height=4}
 ggplot(data = u)+
   facet_wrap(facets = ~paste0("dose=", dose))+
-  geom_tile(aes(x = treatment_i, y = treatment_j, fill = M), col = "white")+
-  geom_text(aes(x = treatment_i, y = treatment_j, label = M), size = 3, col = "black")+
+  geom_tile(aes(x = compound_i, y = compound_j, fill = M), col = "white")+
+  geom_text(aes(x = compound_i, y = compound_j, label = M), 
+            size = 3, col = "black")+
   scale_fill_distiller(name = "M", palette = "Spectral")
 ```
 
@@ -131,9 +132,12 @@ ggplot(data = u)+
 ```{r, fig.width=6, fig.height=4}
 ggplot(data = u)+
   facet_wrap(facets = ~paste0("dose=", dose))+
-  geom_tile(aes(x = treatment_i, y = treatment_j, fill = pmax), col = "white")+
-  geom_text(aes(x = treatment_i, y = treatment_j, label = pmax), size = 3, col = "black")+
-  scale_fill_distiller(name = expression(pi), palette = "Spectral", limits = c(0, 1))
+  geom_tile(aes(x = compound_i, y = compound_j, fill = pmax), 
+            col = "white")+
+  geom_text(aes(x = compound_i, y = compound_j, label = pmax), 
+            size = 3, col = "black")+
+  scale_fill_distiller(name = expression(pi), 
+                       palette = "Spectral", limits = c(0, 1))
 ```
 
 

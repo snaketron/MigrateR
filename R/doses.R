@@ -1,9 +1,9 @@
 
-compare_doses <- function(x, select_ds, select_ts) {
+compare_doses <- function(x, select_ds, select_cs) {
 
   e <- rstan::extract(object = x$f, par = "eff_group")$eff_group
   ds <- unique(x$s$eff_group$dose)
-  ts <- unique(x$s$eff_group$treatment)
+  cs <- unique(x$s$eff_group$compound)
 
   if(missing(select_ds)==FALSE) {
     if(any(!select_ds %in% ds)) {
@@ -12,15 +12,15 @@ compare_doses <- function(x, select_ds, select_ts) {
     ds <- ds[ds %in% select_ds]
   }
 
-  if(missing(select_ts)==FALSE) {
-    if(any(!select_ts %in% ts)) {
-      stop("selected treatments not found in data")
+  if(missing(select_cs)==FALSE) {
+    if(any(!select_cs %in% cs)) {
+      stop("selected compounds not found in data")
     }
-    ts <- ts[ts %in% select_ts]
+    cs <- cs[cs %in% select_cs]
   }
 
   s <- x$s$eff_group
-  s <- s[s$treatment %in% ts & s$dose %in% ds,]
+  s <- s[s$compound %in% cs & s$dose %in% ds,]
 
   b <- lapply(X = ds, s = s, e = e, FUN = get_dose_pmax)
   b <- do.call(rbind, b)
@@ -31,12 +31,12 @@ compare_doses <- function(x, select_ds, select_ts) {
 get_dose_pmax <- function(x, s, e) {
   stats <- c()
   d <- s[s$dose == x, ]
-  ts <- sort(unique(d$treatment))
+  cs <- sort(unique(d$compound))
 
-  for(i in 1:(length(ts)-1)) {
-    for(j in (i+1):length(ts)) {
-      y_i <- e[,d$g[d$dose == x & d$treatment == ts[i]]]
-      y_j <- e[,d$g[d$dose == x & d$treatment == ts[j]]]
+  for(i in 1:(length(cs)-1)) {
+    for(j in (i+1):length(cs)) {
+      y_i <- e[,d$g[d$dose == x & d$compound == cs[i]]]
+      y_j <- e[,d$g[d$dose == x & d$compound == cs[j]]]
       u <- y_i-y_j
 
       Mu <- mean(u)
@@ -44,15 +44,15 @@ get_dose_pmax <- function(x, s, e) {
 
       p_stat <- get_pmax(x = u)
 
-      stats <- rbind(stats, data.frame(treatment_i = ts[i],
-                                       treatment_j = ts[j],
-                                       contrast = paste0(ts[i], '-vs-', ts[j]),
+      stats <- rbind(stats, data.frame(compound_i = cs[i],
+                                       compound_j = cs[j],
+                                       contrast = paste0(cs[i], '-vs-', cs[j]),
                                        dose = x,
                                        M = Mu,
                                        L95 = hdi[1],
                                        H95 = hdi[2],
                                        pmax = p_stat,
-                                       key = paste0(ts[i], '-', ts[j], '-', x)))
+                                       key = paste0(cs[i], '-', cs[j], '-', x)))
     }
   }
   return(stats)

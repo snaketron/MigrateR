@@ -1,4 +1,4 @@
-Package: cellvel
+Package: MigrateR
 Type: Package
 Title: Quantification of cell migration speed with Bayesian probability models
 Version: 0.0.2
@@ -7,7 +7,7 @@ Authors@R:
            family = "Kitanovski",
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
-Description: cellvel implements a hierarchical Bayesian model for 
+Description: MigrateR implements a hierarchical Bayesian model for 
     quantitative analysis of cell speeds in samples treated under 
     various biological conditions.
 License: GPL-3 + file LICENSE
@@ -35,8 +35,8 @@ Suggests:
 Encoding: UTF-8
 NeedsCompilation: no
 biocViews: Visualization, Clustering, CellBiology, Software
-BugReports: https://github.com/snaketron/cellvel/issues
-URL: https://github.com/snaketron/cellvel
+BugReports: https://github.com/snaketron/MigrateR/issues
+URL: https://github.com/snaketron/MigrateR
 RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 Biarch: true

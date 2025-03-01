@@ -1,4 +1,4 @@
-# cellvel
+# MigrateR
 
 Quantification of cell migration speed with Bayesian probability models
 
@@ -13,25 +13,25 @@ readouts are often noisy and susceptible to batch effects. As a result, the
 estimates of cell migration speeds tend to be highly uncertain, a challenge 
 further exacerbated by the use of suboptimal statistical methods.
 
-cellvel addresses these issues by implementing hierarchical Bayesian models 
+MigrateR addresses these issues by implementing hierarchical Bayesian models 
 designed to handle noisy and sparse cell migration data. It accounts for 
 potential batch effects and provides robust quantitative estimates of cell 
 speeds in each sample, while also facilitating differential migration analysis 
-across different treatments. Additionally, cellvel includes tools that assist 
+across different treatments. Additionally, MigrateR includes tools that assist 
 in planning future experiments, answering critical questions such as: "How many 
 replicates and cells are needed to reliably detect a given effect?"
 
-## How to use cellvel
+## How to use MigrateR
 
 scBubbletree is an R-package
 
-<https://github.com/snaketron/cellvel>
+<https://github.com/snaketron/MigrateR>
 
 To install this package, start R and enter:
 
 ``` r
 library("devtools")
-devtools::install_github("snaketron/cellvel")
+devtools::install_github("snaketron/MigrateR")
 ```
 
 Case studies are provided in the directory /vignettes

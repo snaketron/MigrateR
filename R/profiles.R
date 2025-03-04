@@ -4,8 +4,8 @@ get_profiles <- function(x,
                          hc_dist = "euclidean",
                          select_ds,
                          select_ts) {
-  eg <- x$s$eff_group
-  es <- x$s$eff_sample
+  eg <- x$s$mu_group
+  es <- x$s$mu_well
 
   if(missing(select_ds)==FALSE) {
     if(any(!select_ds %in% unique(eg$dose))) {
@@ -30,9 +30,8 @@ get_profiles <- function(x,
   ph <- as.phylo(x = hc)
 
 
-  bt <- get_boot_profiles(x = x, gs = eg$g, hc_dist = hc_dist,
+  bt <- get_boot_profiles(x = x, gs = eg$group_id, hc_dist = hc_dist,
                           hc_link = hc_link, main_ph = ph)
-
 
   tree <- ggtree(bt$main, linetype='solid')+
     geom_point2(mapping = aes(subset=isTip==FALSE),size = 0.5, col = "black")+
@@ -69,7 +68,7 @@ get_profiles <- function(x,
   q <- es[es$compound %in% q$compound, ]
   q$compound <- factor(q$compound, levels = rev(tips))
   g2 <- ggplot(data = q)+
-    facet_wrap(facets = compound~batch, 
+    facet_wrap(facets = compound~plate, 
                nrow = length(unique(q$compound)), 
                switch = "y", scales = "free_y")+
     geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5.), 
@@ -93,13 +92,13 @@ get_profiles <- function(x,
 
 
 get_boot_profiles <- function(x, gs, hc_dist, hc_link, main_ph) {
-  e <- extract(x$f, par = "eff_group")$eff_group[, gs]
+  e <- extract(x$f, par = "mu_group")$mu_group[, gs]
   e <- e[sample(x = 1:nrow(e), size = min(nrow(e), 1000), replace = FALSE),]
 
-  meta <- x$s$eff_group[, c("g", "compound", "dose")]
-  meta <- meta[order(meta$g, decreasing = F),]
-  meta <- meta[meta$g %in% gs, ]
-  meta$g <- NULL
+  meta <- x$s$mu_group[, c("group_id", "compound", "dose")]
+  meta <- meta[order(meta$group_id, decreasing = F),]
+  meta <- meta[meta$group_id %in% gs, ]
+  meta$group_id <- NULL
 
   boot_ph <- c()
   for(i in 1:nrow(e)) {

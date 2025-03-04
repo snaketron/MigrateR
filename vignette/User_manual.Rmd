@@ -44,26 +44,29 @@ data("d_clean", package = "cellmig")
 knitr::kable(d[1:10,], row.names = F, digits = 2)
 ```
 
-```{r, fig.width=6, fig.height=3}
+```{r, fig.width=6, fig.height=4.5}
 ggplot(data = d)+
-  facet_wrap(facets = ~paste0("c=", compound), scales = "free_y")+
-  geom_sina(aes(x = as.factor(dose), col = batch, y= v), size = 0.5)+
+  facet_wrap(facets = ~paste0(compound), scales = "free_y", ncol = 2)+
+  geom_sina(aes(x = as.factor(dose), col = plate, y = v), size = 0.5)+
   theme_bw()+
-  theme(strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
-  xlab(label = "dose")
+  theme(legend.position = "top",
+        strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
+  xlab(label = "dose")+
+  scale_color_manual(values = c("steelblue", "orange", "forestgreen", "purple"))
 ```
 
 
-# Data (scaled)
+# Migration speed (scaled)
 
-```{r, fig.width=6, fig.height=3}
+```{r, fig.width=6, fig.height=4.5}
 ggplot(data = d)+
-  facet_wrap(facets = ~paste0("c=", compound), scales = "free_y")+
-  geom_sina(aes(x = as.factor(dose), col = batch, y= v/max(v)), size = 0.5)+
+  facet_wrap(facets = ~paste0(compound), scales = "free_y", ncol = 2)+
+  geom_sina(aes(x = as.factor(dose), col = plate, y = v/max(v)), size = 0.5)+
   theme_bw()+
-  theme(strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
+  theme(legend.position = "top",
+        strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
   xlab(label = "dose")+
-  ylab(label = "s")
+  scale_color_manual(values = c("steelblue", "orange", "forestgreen", "purple"))
 ```
 
 
@@ -77,7 +80,7 @@ o <- cellmig(x = d,
                             mcmc_chains = 4,
                             mcmc_cores = 4,
                             mcmc_algorithm = "NUTS",
-                            adapt_delta = 0.9,
+                            adapt_delta = 0.8,
                             max_treedepth = 10))
 ```
 
@@ -85,8 +88,8 @@ o <- cellmig(x = d,
 # Compound:dose specific effects
 
 ```{r, fig.width=6, fig.height=3}
-ggplot(data = o$s$eff_group)+
-  geom_line(aes(x = dose, y = mean, col = compound))+
+ggplot(data = o$s$mu_group)+
+  geom_line(aes(x = dose, y = mean, col = compound, group = compound))+
   geom_point(aes(x = dose, y = mean, col = compound))+
   geom_errorbar(aes(x = dose, y = mean, ymin = X2.5., ymax = X97.5., 
                     col = compound), width = 0.04)
@@ -96,9 +99,9 @@ ggplot(data = o$s$eff_group)+
 
 # Compound:dose profiles
 
-```{r, fig.width=8, fig.height=5}
+```{r, fig.width=9, fig.height=5}
 get_profiles(x = o)+
-  patchwork::plot_layout(widths = c(1, 1, 2.5))
+  patchwork::plot_layout(widths = c(1, 1, 5))
 ```
 
 
@@ -145,27 +148,8 @@ ggplot(data = u)+
 
 # PPC
 
-```{r, fig.width=7, fig.height=8}
-e <- rstan::extract(object = o$f, par = "y_hat_sample")$y_hat_sample
-e <- reshape2::melt(data = e)
-colnames(e) <- c("iter", "s", "yhat")
-q <- o$x[, c("s", "compound", "dose", "group", "batch")]
-q <- q[duplicated(q)==F,]
-e <- merge(x = e, y = q, all.x = T)
-
-g <- ggplot()+
-  facet_wrap(~paste0(compound, " (", gsub(pattern = "n", replacement = '', 
-                                          x = batch), ")"), 
-             ncol = 3, scales = "free")+
-  geom_violin(data = e, aes(x = as.factor(dose), y = yhat, linetype = batch), 
-              fill = NA, col = "red", linetype = "dashed")+
-  geom_sina(data = o$x, aes(x = as.factor(dose), y = sv, col = batch), 
-            col = "black", size = 0.3)+
-  theme_bw(base_size = 10)+
-  theme(legend.position = "none")+
-  theme(strip.text.x = element_text(margin = margin(0.02,0,0.02,0, "cm")))+
-  xlab(label = "dose")+
-  scale_y_continuous(name = "s", breaks = scales::pretty_breaks(3))
+```{r, fig.width=5, fig.height=5}
+g <- get_ppc(x = o)
 g
 ```
 

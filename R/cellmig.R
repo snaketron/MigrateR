@@ -1,31 +1,3 @@
-#' Model-based quantification of cell velocity
-#'
-#' The functions takes a data.frame, x, as its main input. Meanwhile,
-#' the input list control can be used to configure the MCMC procedure
-#' performed by R-package rstan.  The output is a list which contains:
-#' 1) f = fit as rstan object; 2) x = processed input; 3) s = summary
-#' of model parameters (means, medians, 95% credible intervals, etc.).
-#'
-#' The input x must have cell entries as rows and the following columns:
-#' * sample = unique id of the biological replicate (e.g. S1, S2, S3, ...)
-#' * batch = id of the experimental batch (e.g. plate X, plat Y, ...)
-#' * compound = character id of the treatment compound
-#' * dose = numeric
-#' * v = numeric cell speed
-#'
-#' @return a list
-#' @export
-#' @examples
-#' data(d, package = "cellmig")
-#' o <- cellmig(x = d,
-#'              control = list(mcmc_warmup = 300,
-#'                             mcmc_steps = 600,
-#'                             mcmc_chains = 3,
-#'                             mcmc_cores = 1,
-#'                             mcmc_algorithm = "NUTS",
-#'                             adapt_delta = 0.9,
-#'                             max_treedepth = 10))
-#' head(o)
 cellmig <- function(x, control = NULL, model) {
 
   # check inputs
@@ -42,7 +14,6 @@ cellmig <- function(x, control = NULL, model) {
 
   return(list(f = f, x = x, s = s))
 }
-
 
 get_fit <- function(x, control, model) {
   message("model fitting... \n")
@@ -70,54 +41,81 @@ get_fit <- function(x, control, model) {
                   algorithm = control$mcmc_algorithm,
                   control = list(adapt_delta = control$adapt_delta,
                                  max_treedepth = control$max_treedepth),
-                  refresh = 100)
+                  refresh = 500)
 
   return(fit)
 }
 
-
 get_summary <- function(x, f) {
   message("computing posterior summaries...\n")
 
-  # get unique meta data
-  l <- x[, c("s", "sample", "g", "group", "compound", "dose", "b", "batch")]
-  l_s <- l[duplicated(l)==FALSE, ]
-  l_b <- l[duplicated(l[,c("b","batch")])==FALSE, c("b", "batch")]
-  l_g <- l[duplicated(l[,c("g","group")])==FALSE,
-           c("g", "group", "compound", "dose", "b", "batch")]
+  x <- x$d
+  
+  # get meta data
+  l <- x[, c("well_id", "well", "group_id", "group", 
+             "compound", "dose", "plate_id", "plate", 
+             "plate_group_id", "plate_group")]
+  meta_well <- l[duplicated(l)==FALSE, ]
+  meta_plate <- l[duplicated(l[, c("plate", "plate_id")])==FALSE, 
+                  c("plate", "plate_id")]
+  meta_group <- l[duplicated(l[, c("group", "group_id")])==FALSE, 
+                  c("group", "group_id", "compound", "dose", 
+                    "plate_id", "plate")]
+  meta_plate_group <- l[duplicated(l[, c("group", "group_id", 
+                                         "plate", "plate_id",
+                                         "plate_group", 
+                                         "plate_group_id")])==FALSE, 
+                        c("group", "group_id", 
+                          "plate", "plate_id",
+                          "plate_group", 
+                          "plate_group_id")]
+  
+  # par: alpha_plate
+  alpha_plate <- data.frame(summary(f, par = "alpha_plate")$summary)
+  alpha_plate$plate_id <- 1:nrow(alpha_plate)
+  alpha_plate <- merge(x = alpha_plate, y = meta_plate, 
+                       by = "plate_id", all.x = TRUE)
+  
+  # par: mu_group
+  mu_group <- data.frame(summary(f, par = "mu_group")$summary)
+  mu_group$group_id <- 1:nrow(mu_group)
+  mu_group <- merge(x = mu_group, y = meta_group, by = "group_id", all.x = TRUE)
 
-  # par: eff_batch
-  eff_batch <- data.frame(summary(f, par = "eff_batch")$summary)
-  eff_batch$b <- 1:nrow(eff_batch)
-  eff_batch <- merge(x = eff_batch, y = l_b, by = "b", all.x = TRUE)
+  # par: mu_plate_group
+  mu_plate_group <- data.frame(summary(f, par = "mu_plate_group")$summary)
+  mu_plate_group$plate_group_id <- 1:nrow(mu_plate_group)
+  mu_plate_group <- merge(x = mu_plate_group, y = meta_plate_group, 
+                          by = "plate_group_id", all.x = TRUE)
+  
+  # par: mu_well
+  mu_well <- data.frame(summary(f, par = "mu_well")$summary)
+  mu_well$well_id <- 1:nrow(mu_well)
+  mu_well <- merge(x = mu_well, y = meta_well, by = "well_id", all.x = TRUE)
 
-  # par: eff_group
-  eff_group <- data.frame(summary(f, par = "eff_group")$summary)
-  eff_group$g <- 1:nrow(eff_group)
-  eff_group <- merge(x = eff_group, y = l_g, by = "g", all.x = TRUE)
+  # par: sigma_bplate
+  sigma_bplate <- data.frame(summary(f, par = "sigma_bplate")$summary)
+  sigma_wplate <- data.frame(summary(f, par = "sigma_wplate")$summary)
+  
+  # par: rate
+  rate <- data.frame(summary(f, par = "rate")$summary)
+  rate$well_id <- 1:nrow(rate)
+  rate <- merge(x = rate, y = meta_well, by = "well_id", all.x = TRUE)
 
-  # par: eff_sample
-  eff_sample <- data.frame(summary(f, par = "eff_sample")$summary)
-  eff_sample$s <- 1:nrow(eff_sample)
-  eff_sample <- merge(x = eff_sample, y = l_s, by = "s", all.x = TRUE)
-
-  # par: sigma_group
-  sigma_group <- data.frame(summary(f, par = "sigma_group")$summary)
-
-  # par: mu
-  mu <- data.frame(summary(f, par = "mu")$summary)
-  mu$s <- 1:nrow(mu)
-  mu <- merge(x = mu, y = l_s, by = "s", all.x = TRUE)
-
+  # par: shape
+  shape <- data.frame(summary(f, par = "shape")$summary)
+  
   # par: y_hat_sample
   yhat <- data.frame(summary(f, par = "y_hat_sample")$summary)
-  yhat$s <- 1:nrow(yhat)
-  yhat <- merge(x = yhat, y = l_s, by = "s", all.x = TRUE)
+  yhat$well_id <- 1:nrow(yhat)
+  yhat <- merge(x = yhat, y = meta_well, by = "well_id", all.x = TRUE)
 
-  return(list(eff_batch = eff_batch,
-              eff_group = eff_group, 
-              eff_sample = eff_sample,
-              sigma_group = sigma_group, 
-              mu = mu, yhat = yhat))
+  return(list(alpha_plate = alpha_plate,
+              mu_group = mu_group, 
+              mu_plate_group = mu_plate_group,
+              mu_well = mu_well,
+              sigma_bplate = sigma_bplate,
+              sigma_wplate = sigma_wplate,
+              rate = rate, 
+              shape = shape,
+              yhat = yhat))
 }
-

@@ -35,8 +35,8 @@ get_dose_pmax <- function(x, s, e) {
 
   for(i in 1:(length(cs)-1)) {
     for(j in (i+1):length(cs)) {
-      y_i <- e[,d$g[d$dose == x & d$compound == cs[i]]]
-      y_j <- e[,d$g[d$dose == x & d$compound == cs[j]]]
+      y_i <- e[,d$group_id[d$dose == x & d$compound == cs[i]]]
+      y_j <- e[,d$group_id[d$dose == x & d$compound == cs[j]]]
       u <- y_i-y_j
 
       Mu <- mean(u)

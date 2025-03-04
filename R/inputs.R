@@ -1,5 +1,4 @@
 
-
 process_input <- function(x) {
 
   check_x <- function(x) {
@@ -66,37 +65,39 @@ process_input <- function(x) {
 
   check_x(x=x)
   check_cols(x=x)
+  
+  org_x <- x
 
   x$group <- paste0(x$compound, '|', x$dose)
   x$group_id <- as.numeric(as.factor(x$group))
   x$plate_id <- as.numeric(as.factor(x$plate))
-  # x$sv <- x$v/max(x$v)
-  x$sv <- scale(x = x$v, center = TRUE, scale = TRUE)
-  x$sample <- paste0(x$plate, '|', x$sample, '|', x$group)
-  x$well_id <- as.numeric(as.factor(x$sample))
+  
+  x$sv <- x$v/max(x$v)
+  
+  x$well <- paste0(x$plate, '|', x$sample, '|', x$group)
+  x$well_id <- as.numeric(as.factor(x$well))
+  
   x$plate_group <- paste0(x$plate, '|', x$group)
-  x$plate_group_id <- as.numeric(as.factor(x$plate_group_id))
-  x$well_id <- as.numeric(as.factor(x$sample))
+  x$plate_group_id <- as.numeric(as.factor(x$plate_group))
+  
   x$N <- nrow(x)
   x$N_well <- max(x$well_id)
   x$N_plate <- max(x$plate_id)
   x$N_plate_group <- max(x$plate_group_id)
   x$N_group <- max(x$group_id)
   
-  
   # transform data
-  # well_id -> 
+  # plate_group_id, plate_id -> well_id 
   q <- x[, c("well_id", "plate_id", "plate_group_id")]
   q <- q[duplicated(q)==F, ]
   q <- q[order(q$well_id, decreasing = F),]
   
-  # group_id -> 
+  # group_id -> plate_group_id 
   z <- x[, c("plate_group_id", "group_id")]
   z <- z[duplicated(z)==F, ]
   z <- z[order(z$plate_group_id, decreasing = F),]
   
-  
-  return(list(d = x, x = x, map_w = q, map_pg = z))
+  return(list(d = x, org_x = org_x, map_w = q, map_pg = z))
 }
 
 process_control <- function(control_in) {
@@ -105,8 +106,8 @@ process_control <- function(control_in) {
                   mcmc_chains = 4,
                   mcmc_cores = 1,
                   mcmc_algorithm = "NUTS",
-                  adapt_delta = 0.95,
-                  max_treedepth = 12)
+                  adapt_delta = 0.8,
+                  max_treedepth = 10)
 
   # if missing control_in -> use default values
   if(missing(control_in) || is.null(control_in)) {
@@ -133,7 +134,6 @@ process_control <- function(control_in) {
 
   return(control)
 }
-
 
 # MCMC Iterations check
 check_mcmc_steps <- function(mcmc_steps,
@@ -204,4 +204,3 @@ check_mcmc_cores <- function(mcmc_cores) {
     stop("mcmc_cores must be a positive integer > 0")
   }
 }
-

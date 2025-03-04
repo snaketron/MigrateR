@@ -1,15 +1,15 @@
-Package: MigrateR
+Package: cellmig
 Type: Package
 Title: Quantification of cell migration speed with Bayesian probability models
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",
            role = c("aut", "cre"),
            email = "simo.kitanovski@uni-due.de")
-Description: MigrateR implements a hierarchical Bayesian model for 
-    quantitative analysis of cell speeds in samples treated under 
-    various biological conditions.
+Description: cellmig employs a hierarchical Bayesian model for 
+    quantitative analysis of cell migration in sample wells treated 
+    under various biological conditions.
 License: GPL-3 + file LICENSE
 Depends: 
     R (>= 4.2.0)

@@ -1,10 +1,10 @@
 ---
-title: "cellvel: quantifying cell migration speed with hierarchical Bayesian models"
+title: "cellmig: quantifying cell migration speed with hierarchical Bayesian models"
 author: "Simo Kitanovski (simo.kitanovski@uni-due.de)"
 output:
   BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{User Manual: cellvel}
+  %\VignetteIndexEntry{User Manual: cellmig}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(comment = FALSE,
 # Background
 
 ```{r}
-library(cellvel)
+library(cellmig)
 library(ggplot2)
 library(ggforce)
 library(patchwork)
@@ -40,7 +40,7 @@ In each sample from a combination of compound x dose x batch, we have
 20 observations (cell velocities $v$)
 
 ```{r}
-data("d_clean", package = "cellvel")
+data("d_clean", package = "cellmig")
 knitr::kable(d[1:10,], row.names = F, digits = 2)
 ```
 
@@ -70,7 +70,7 @@ ggplot(data = d)+
 # Model
 
 ```{r, fig.width=7, fig.height=3.5}
-o <- cellvel(x = d,
+o <- cellmig(x = d,
              model = "M",
              control = list(mcmc_warmup = 300,
                             mcmc_steps = 1300,

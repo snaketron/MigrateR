@@ -24,8 +24,8 @@ process_input <- function(x) {
     if(!"sample" %in% colnames(x)) {
       stop("x does not have a column sample")
     }
-    if(!"batch" %in% colnames(x)) {
-      stop("x does not have a column batch")
+    if(!"plate" %in% colnames(x)) {
+      stop("x does not have a column plate")
     }
     if(!"v" %in% colnames(x)) {
       stop("x does not have a column v")
@@ -40,8 +40,8 @@ process_input <- function(x) {
     if(is.character(x[,"sample"])==FALSE) {
       stop("column sample must be character")
     }
-    if(is.character(x[,"batch"])==FALSE) {
-      stop("column batch must be character")
+    if(is.character(x[,"plate"])==FALSE) {
+      stop("column plate must be character")
     }
     if(is.numeric(x[,"v"])==FALSE) {
       stop("column v must be numeric")
@@ -53,8 +53,8 @@ process_input <- function(x) {
     if(any(is.na(x[,"dose"]))) {
       stop("column dose contains NAs")
     }
-    if(any(is.na(x[,"batch"]))) {
-      stop("column batch contains NAs")
+    if(any(is.na(x[,"plate"]))) {
+      stop("column plate contains NAs")
     }
     if(any(is.na(x[,"sample"]))) {
       stop("column sample contains NAs")
@@ -68,14 +68,36 @@ process_input <- function(x) {
   check_cols(x=x)
 
   x$group <- paste0(x$compound, '|', x$dose)
-  x$g <- as.numeric(as.factor(x$group))
-  x$b <- as.numeric(as.factor(x$batch))
-  x$sv <- x$v/max(x$v)
-  x$sample <- paste0(x$batch, '|', x$sample, '|', x$group)
-  x$s <- as.numeric(as.factor(x$sample))
-  return(x)
+  x$group_id <- as.numeric(as.factor(x$group))
+  x$plate_id <- as.numeric(as.factor(x$plate))
+  # x$sv <- x$v/max(x$v)
+  x$sv <- scale(x = x$v, center = TRUE, scale = TRUE)
+  x$sample <- paste0(x$plate, '|', x$sample, '|', x$group)
+  x$well_id <- as.numeric(as.factor(x$sample))
+  x$plate_group <- paste0(x$plate, '|', x$group)
+  x$plate_group_id <- as.numeric(as.factor(x$plate_group_id))
+  x$well_id <- as.numeric(as.factor(x$sample))
+  x$N <- nrow(x)
+  x$N_well <- max(x$well_id)
+  x$N_plate <- max(x$plate_id)
+  x$N_plate_group <- max(x$plate_group_id)
+  x$N_group <- max(x$group_id)
+  
+  
+  # transform data
+  # well_id -> 
+  q <- x[, c("well_id", "plate_id", "plate_group_id")]
+  q <- q[duplicated(q)==F, ]
+  q <- q[order(q$well_id, decreasing = F),]
+  
+  # group_id -> 
+  z <- x[, c("plate_group_id", "group_id")]
+  z <- z[duplicated(z)==F, ]
+  z <- z[order(z$plate_group_id, decreasing = F),]
+  
+  
+  return(list(d = x, x = x, map_w = q, map_pg = z))
 }
-
 
 process_control <- function(control_in) {
   control <- list(mcmc_warmup = 500,

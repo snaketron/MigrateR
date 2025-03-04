@@ -16,8 +16,8 @@
 #' @return a list
 #' @export
 #' @examples
-#' data(d, package = "cellvel")
-#' o <- cellvel(x = d,
+#' data(d, package = "cellmig")
+#' o <- cellmig(x = d,
 #'              control = list(mcmc_warmup = 300,
 #'                             mcmc_steps = 600,
 #'                             mcmc_chains = 3,
@@ -26,7 +26,7 @@
 #'                             adapt_delta = 0.9,
 #'                             max_treedepth = 10))
 #' head(o)
-cellvel <- function(x, control = NULL, model) {
+cellmig <- function(x, control = NULL, model) {
 
   # check inputs
   x <- process_input(x)
@@ -47,18 +47,22 @@ cellvel <- function(x, control = NULL, model) {
 get_fit <- function(x, control, model) {
   message("model fitting... \n")
 
-  # transform data
-  q <- x[, c("s", "g", "b")]
-  q <- q[duplicated(q)==F, ]
-  q <- q[order(q$s, decreasing = F),]
-
   if(model == "M") {
     M <- stanmodels$M
   }
 
   # fit model
   fit <- sampling(object = M,
-                  data = list(y = x$sv, N = nrow(x), s = x$s, g = q$g, b = q$b),
+                  data = list(y = x$d$sv, 
+                              N = x$d$N[1], 
+                              N_well = x$d$N_well[1], 
+                              N_plate = x$d$N_plate[1],
+                              N_plate_group = x$d$N_plate_group[1],
+                              N_group = x$d$N_group[1],
+                              well_id = x$d$well_id,
+                              plate_id = x$map_w$plate_id,
+                              plate_group_id = x$map_w$plate_group_id,
+                              group_id = x$map_pg$group_id),
                   chains = control$mcmc_chains,
                   cores = control$mcmc_cores,
                   iter = control$mcmc_steps,

@@ -1,9 +1,9 @@
 
 compare_doses <- function(x, select_ds, select_cs) {
 
-  e <- rstan::extract(object = x$f, par = "eff_group")$eff_group
-  ds <- unique(x$s$eff_group$dose)
-  cs <- unique(x$s$eff_group$compound)
+  e <- rstan::extract(object = x$f, par = "mu_group")$mu_group
+  ds <- unique(x$s$mu_group$dose)
+  cs <- unique(x$s$mu_group$compound)
 
   if(missing(select_ds)==FALSE) {
     if(any(!select_ds %in% ds)) {
@@ -19,7 +19,7 @@ compare_doses <- function(x, select_ds, select_cs) {
     cs <- cs[cs %in% select_cs]
   }
 
-  s <- x$s$eff_group
+  s <- x$s$mu_group
   s <- s[s$compound %in% cs & s$dose %in% ds,]
 
   b <- lapply(X = ds, s = s, e = e, FUN = get_dose_pmax)

@@ -44,29 +44,33 @@ data("d_clean", package = "cellmig")
 knitr::kable(d[1:10,], row.names = F, digits = 2)
 ```
 
-```{r, fig.width=6, fig.height=4.5}
+```{r, fig.width=7, fig.height=5}
 ggplot(data = d)+
-  facet_wrap(facets = ~paste0(compound), scales = "free_y", ncol = 2)+
-  geom_sina(aes(x = as.factor(dose), col = plate, y = v), size = 0.5)+
+  facet_wrap(facets = ~paste0("compound=", compound), scales = "free_y", ncol = 2)+
+  geom_sina(aes(x = as.factor(dose), col = plate, y = v, group = sample), size = 0.5)+
   theme_bw()+
   theme(legend.position = "top",
-        strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
+        strip.text.x = element_text(margin = margin(0.03,0,0.03,0, "cm")))+
   xlab(label = "dose")+
-  scale_color_manual(values = c("steelblue", "orange", "forestgreen", "purple"))
+  ylab(label = "migration speed")+
+  scale_color_manual(values = c("steelblue", "orange", "forestgreen", "purple"))+
+  guides(color = guide_legend(override.aes = list(size = 3)))
 ```
 
 
 # Migration speed (scaled)
 
-```{r, fig.width=6, fig.height=4.5}
+```{r, fig.width=7, fig.height=5}
 ggplot(data = d)+
-  facet_wrap(facets = ~paste0(compound), scales = "free_y", ncol = 2)+
-  geom_sina(aes(x = as.factor(dose), col = plate, y = v/max(v)), size = 0.5)+
+  facet_wrap(facets = ~paste0("compound=", compound), scales = "free_y", ncol = 2)+
+  geom_sina(aes(x = as.factor(dose), col = plate, y = v/max(v), group = sample), size = 0.5)+
   theme_bw()+
   theme(legend.position = "top",
-        strip.text.x = element_text(margin = margin(0.01,0,0.01,0, "cm")))+
+        strip.text.x = element_text(margin = margin(0.03,0,0.03,0, "cm")))+
   xlab(label = "dose")+
-  scale_color_manual(values = c("steelblue", "orange", "forestgreen", "purple"))
+  ylab(label = "migration speed [scaled by max speed]")+
+  scale_color_manual(values = c("steelblue", "orange", "forestgreen", "purple"))+
+  guides(color = guide_legend(override.aes = list(size = 3)))
 ```
 
 

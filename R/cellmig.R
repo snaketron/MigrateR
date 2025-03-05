@@ -1,4 +1,4 @@
-cellmig <- function(x, control = NULL, model) {
+cellmig <- function(x, control = NULL) {
 
   # check inputs
   x <- process_input(x)
@@ -7,7 +7,7 @@ cellmig <- function(x, control = NULL, model) {
   control <- process_control(control_in = control)
 
   # fit model
-  f <- get_fit(x = x, control = control, model = model)
+  f <- get_fit(x = x, control = control)
 
   # get summary
   s <- get_summary(x = x, f = f)
@@ -15,12 +15,10 @@ cellmig <- function(x, control = NULL, model) {
   return(list(f = f, x = x, s = s))
 }
 
-get_fit <- function(x, control, model) {
+get_fit <- function(x, control) {
   message("model fitting... \n")
 
-  if(model == "M") {
-    M <- stanmodels$M
-  }
+  M <- stanmodels$M
 
   # fit model
   fit <- sampling(object = M,

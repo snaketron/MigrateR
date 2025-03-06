@@ -20,6 +20,7 @@ get_ppc <- function(x) {
         theme(strip.text.x = element_text(
             margin = margin(0.02,0,0.02,0, "cm")))+
         xlab(label = "dose")+
-        scale_y_continuous(name = "s", breaks = scales::pretty_breaks(3))
+        scale_y_continuous(name = "Cell migration speed", 
+                           breaks = pretty_breaks(3))
     return(g)
 }

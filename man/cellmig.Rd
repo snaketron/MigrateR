@@ -46,8 +46,6 @@ performed by R-package rstan. The output is a list which contains:
 1) f = fit as rstan object; 2) x = processed input; 3) s = summary 
 of model parameters (means, medians, 95\% credible intervals, etc.).
 }
-
-}
 \examples{
 data(d, package = "cellmig")
 o <- cellmig(x = d,

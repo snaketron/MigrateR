@@ -27,7 +27,8 @@ Imports:
     rstan (>= 2.18.1),
     rstantools (>= 2.4.0),
     stats,
-    utils
+    utils,
+    scales
 Suggests:
     BiocStyle,
     knitr,

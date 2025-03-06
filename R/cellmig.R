@@ -63,10 +63,8 @@ get_summary <- function(x, f) {
                                          "plate", "plate_id",
                                          "plate_group", 
                                          "plate_group_id")])==FALSE, 
-                        c("group", "group_id", 
-                          "plate", "plate_id",
-                          "plate_group", 
-                          "plate_group_id")]
+                        c("well_id", "group", "group_id", "plate", "plate_id",
+                          "compound", "dose", "plate_group", "plate_group_id")]
   
   # par: alpha_plate
   alpha_plate <- data.frame(summary(f, par = "alpha_plate")$summary)

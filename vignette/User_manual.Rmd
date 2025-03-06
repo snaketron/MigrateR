@@ -111,42 +111,11 @@ get_profiles(x = o)+
 
 
 
-# Compare effects at specific doses
-Huge differences in compound effects at dose = 2, 3 and 4. At dose = 1 and 
-dose = 5, unclear differences in compound effects.
+# Compare treatment effects
 
 ```{r, fig.width=6, fig.height=4}
-u <- compare_doses(x = o)
-u$pmax <- round(x = u$pmax, digits = 2)
-u$M <- round(x = u$M, digits = 2)
+u <- get_pairs(x = o)
 ```
-
-
-## M
-
-```{r, fig.width=6, fig.height=4}
-ggplot(data = u)+
-  facet_wrap(facets = ~paste0("dose=", dose))+
-  geom_tile(aes(x = compound_i, y = compound_j, fill = M), col = "white")+
-  geom_text(aes(x = compound_i, y = compound_j, label = M), 
-            size = 3, col = "black")+
-  scale_fill_distiller(name = "M", palette = "Spectral")
-```
-
-
-## $\pi$
-
-```{r, fig.width=6, fig.height=4}
-ggplot(data = u)+
-  facet_wrap(facets = ~paste0("dose=", dose))+
-  geom_tile(aes(x = compound_i, y = compound_j, fill = pmax), 
-            col = "white")+
-  geom_text(aes(x = compound_i, y = compound_j, label = pmax), 
-            size = 3, col = "black")+
-  scale_fill_distiller(name = expression(pi), 
-                       palette = "Spectral", limits = c(0, 1))
-```
-
 
 
 

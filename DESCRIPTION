@@ -1,7 +1,7 @@
 Package: cellmig
 Type: Package
 Title: Quantification of cell migration speed with Bayesian probability models
-Version: 0.0.3
+Version: 0.0.4
 Authors@R: 
     person(given = "Simo",  
            family = "Kitanovski",

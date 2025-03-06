@@ -26,9 +26,6 @@ sampling algorithm, list, with elements and default values:
 \item max_treedepth = 10
 }
 }
-
-
-
 }
 \value{
 A list which contains:

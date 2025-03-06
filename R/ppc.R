@@ -1,7 +1,7 @@
 
 get_ppc <- function(x) {
-    e <- rstan::extract(object = x$f, par = "y_hat_sample")$y_hat_sample
-    e <- reshape2::melt(data = e)
+    e <- extract(object = x$f, par = "y_hat_sample")$y_hat_sample
+    e <- melt(data = e)
     colnames(e) <- c("iter", "well_id", "yhat")
     q <- x$x$d[, c("well_id", "compound", "dose", "group", "plate", "sample")]
     q <- q[duplicated(q)==F,]

@@ -40,11 +40,11 @@
 \value{
   A data frame containing:
   \itemize{
-    \item{iteration}{Simulation iteration index.}
-    \item{well_id}{Unique well identifier.}
-    \item{y}{Simulated response value.}
-    \item{group_id}{Experimental group identifier.}
-    \item{plate_id}{Plate identifier.}
+    \item{iteration = Simulation iteration index.}
+    \item{well_id = Unique well identifier.}
+    \item{y = Simulated response value.}
+    \item{group_id = Experimental group identifier.}
+    \item{plate_id = Plate identifier.}
   }
 }
 \examples{

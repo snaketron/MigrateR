@@ -38,5 +38,5 @@ for(c in 1:length(mu_compound)) {
 }
 
 d <- x
-save(d, file = "data/d_clean.RData", compress = TRUE)
+save(d, file = "data/d.RData", compress = TRUE)
 

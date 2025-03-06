@@ -40,7 +40,7 @@ In each sample from a combination of compound x dose x batch, we have
 20 observations (cell velocities $v$)
 
 ```{r}
-data("d_clean", package = "cellmig")
+data("d", package = "cellmig")
 knitr::kable(d[1:10,], row.names = F, digits = 2)
 ```
 

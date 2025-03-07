@@ -48,6 +48,63 @@ get_pairs <- function(x) {
 }
 
 
+
+get_delta_violins <- function(x, from_groups, to_group) {
+    if(length(to_group)!=1) {
+        stop("only one to_group allowed")
+    }
+    
+    p <- extract(x$f, par = "mu_group")$mu_group
+    if(ncol(p)==1) {
+        stop("only one treatment group: nothing to compare")
+    }
+    
+    gmap <- x$s$mu_group[, c("group_id", "group")]
+    gmap_from <- gmap[gmap$group %in% from_groups,]
+    gmap_to <- gmap[gmap$group %in% to_groups,]
+    
+    ds <- vector(mode = "list", length = nrow(gmap_from))
+    ct <- 1
+    for(i in 1:nrow(gmap_from)) {
+        for(j in 1:nrow(gmap_to)) {
+            
+            d <- p[,gmap_from$group_id[i]]-p[,gmap_to$group_id[j]]
+            pmax <- get_pmax(d)
+            ds[[ct]] <- data.frame(delta = d,
+                                   group_id_x = gmap_from$group_id[i], 
+                                   group_id_y = gmap_to$group_id[j], 
+                                   group_x = gmap_from$group[i], 
+                                   group_y = gmap_to$group[j], 
+                                   pmax = pmax)
+            ct <- ct + 1
+        }
+    }
+    ds <- do.call(rbind, ds)
+    ds$contrast <- paste0(ds$group_x, "-vs-", ds$group_y) 
+    ds$contrast <- factor(x = ds$contrast, 
+                          levels = paste0(from_groups, "-vs-", to_group))
+    
+    ds_pmax <- ds[duplicated(ds[, c("group_x", "group_y")])==FALSE,]
+    
+    g <- ggplot(data = ds)+
+        geom_hline(yintercept = 0, linetype = "dashed")+
+        geom_violin(aes(x = contrast,, y = delta), 
+                    col = "steelblue", fill = "steelblue")+
+        geom_text(data = ds_pmax,
+                  aes(x = contrast, y = max(ds$delta)+0.25, 
+                      label = round(x = pmax, digits = 2)), size = 2)+
+        theme_bw(base_size = 10)+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+        xlab(label = 'Comparisons')+
+        ylab(label = expression(delta))
+    
+    g
+    
+    return(list(ds = ds, plot = g))
+}
+
+
+
 get_pmax <- function(x) {
   if(all(x==0)) {
     return(0)

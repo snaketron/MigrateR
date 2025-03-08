@@ -40,3 +40,16 @@ for(c in 1:length(mu_compound)) {
 d <- x
 save(d, file = "data/d.RData", compress = TRUE)
 
+
+
+
+# apply cellmig
+cellmig_out <- cellmig(x = d[d$plate%in%c("p1", "p2"),],
+             control = list(mcmc_warmup = 300,
+                            mcmc_steps = 700,
+                            mcmc_chains = 3,
+                            mcmc_cores = 3,
+                            mcmc_algorithm = "NUTS",
+                            adapt_delta = 0.8,
+                            max_treedepth = 10))
+save(cellmig_out, file = "data/cellmig_out.RData", compress = TRUE)

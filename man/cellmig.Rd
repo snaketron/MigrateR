@@ -1,6 +1,13 @@
 \name{cellmig}
 \alias{cellmig}
 \title{Model-based quantification of cell migration speed}
+\description{
+The functions takes a data.frame, x, as its main input. Meanwhile,
+the input list control can be used to configure the MCMC procedure
+performed by R-package rstan. The output is a list which contains:
+1) f = fit as rstan object; 2) x = processed input; 3) s = summary 
+of model parameters (means, medians, 95\% credible intervals, etc.).
+}
 \usage{
 cellmig(x, control = NULL)
 }
@@ -36,22 +43,18 @@ A list which contains:
 }
 
 }
-\description{
-The functions takes a data.frame, x, as its main input. Meanwhile,
-the input list control can be used to configure the MCMC procedure
-performed by R-package rstan. The output is a list which contains:
-1) f = fit as rstan object; 2) x = processed input; 3) s = summary 
-of model parameters (means, medians, 95\% credible intervals, etc.).
-}
+
 \examples{
 data(d, package = "cellmig")
-o <- cellmig(x = d,
-             control = list(mcmc_warmup = 300,
-                            mcmc_steps = 600,
-                            mcmc_chains = 3,
-                            mcmc_cores = 1,
-                            mcmc_algorithm = "NUTS",
-                            adapt_delta = 0.8,
-                            max_treedepth = 10))
-head(o)
+#cellmig_out <- cellmig(x = d,
+#             control = list(mcmc_warmup = 300,
+#                            mcmc_steps = 1500,
+#                            mcmc_chains = 3,
+#                            mcmc_cores = 3,
+#                            mcmc_algorithm = "NUTS",
+#                            adapt_delta = 0.8,
+#                            max_treedepth = 10))
+#
+data(cellmig_out, package = "cellmig")
+str(cellmig_out)
 }

@@ -1,4 +1,12 @@
 
+
+get_groups <- function(x) {
+    m <- x$s$mu_group[, c("group_id", "group",
+                          "compound", "dose")]
+    return(m)
+}
+
+
 get_pairs <- function(x) {
     p <- extract(x$f, par = "mu_group")$mu_group
     if(ncol(p)==1) {
@@ -49,7 +57,7 @@ get_pairs <- function(x) {
 
 
 
-get_delta_violins <- function(x, from_groups, to_group) {
+get_violins <- function(x, from_groups, to_group) {
     if(length(to_group)!=1) {
         stop("only one to_group allowed")
     }
@@ -59,9 +67,9 @@ get_delta_violins <- function(x, from_groups, to_group) {
         stop("only one treatment group: nothing to compare")
     }
     
-    gmap <- x$s$mu_group[, c("group_id", "group")]
+    gmap <- get_groups(x = x)
     gmap_from <- gmap[gmap$group %in% from_groups,]
-    gmap_to <- gmap[gmap$group %in% to_groups,]
+    gmap_to <- gmap[gmap$group %in% to_group,]
     
     ds <- vector(mode = "list", length = nrow(gmap_from))
     ct <- 1
@@ -75,6 +83,8 @@ get_delta_violins <- function(x, from_groups, to_group) {
                                    group_id_y = gmap_to$group_id[j], 
                                    group_x = gmap_from$group[i], 
                                    group_y = gmap_to$group[j], 
+                                   compound = gmap_from$compound[i], 
+                                   dose = gmap_from$dose[i],
                                    pmax = pmax)
             ct <- ct + 1
         }
@@ -87,12 +97,13 @@ get_delta_violins <- function(x, from_groups, to_group) {
     ds_pmax <- ds[duplicated(ds[, c("group_x", "group_y")])==FALSE,]
     
     g <- ggplot(data = ds)+
+        facet_wrap(facets = ~compound, scales = "free_x")+
         geom_hline(yintercept = 0, linetype = "dashed")+
         geom_violin(aes(x = contrast,, y = delta), 
-                    col = "steelblue", fill = "steelblue")+
+                    col = "steelblue", fill = "steelblue", alpha = 0.8)+
         geom_text(data = ds_pmax,
                   aes(x = contrast, y = max(ds$delta)+0.25, 
-                      label = round(x = pmax, digits = 2)), size = 2)+
+                      label = round(x = pmax, digits = 2)), size = 2.25)+
         theme_bw(base_size = 10)+
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
         xlab(label = 'Comparisons')+

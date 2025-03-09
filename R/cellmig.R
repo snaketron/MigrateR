@@ -15,11 +15,26 @@ cellmig <- function(x, control = NULL) {
   return(list(f = f, x = x, s = s))
 }
 
-get_fit <- function(x, control) {
+get_fit <- function(x, control, full_model = FALSE) {
   message("model fitting... \n")
 
   M <- stanmodels$M
 
+  if(missing(full_model)) {
+    full_model <- FALSE
+  }
+  if(length(full_model)!=1) {
+    stop("full_model must be TRUE or FALSE (default)")
+  }
+  if(is.logical(full_model)==FALSE) {
+    stop("full_model must be TRUE or FALSE (default)")
+  }
+  if(full_model) {
+    pars <- NA
+  } else {
+    pars <- c("z_1", "z_2", "log_lik")
+  }
+  
   # fit model
   fit <- sampling(object = M,
                   data = list(y = x$d$sv, 
@@ -32,6 +47,8 @@ get_fit <- function(x, control) {
                               plate_id = x$map_w$plate_id,
                               plate_group_id = x$map_w$plate_group_id,
                               group_id = x$map_pg$group_id),
+                  pars = pars,
+                  include  = FALSE,
                   chains = control$mcmc_chains,
                   cores = control$mcmc_cores,
                   iter = control$mcmc_steps,

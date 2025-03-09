@@ -60,6 +60,9 @@ get_pairs <- function(x, groups = NA) {
   }
   ds <- do.call(rbind, ds)
   
+  ds$group_x <- factor(x = ds$group_x, levels = groups)
+  ds$group_y <- factor(x = ds$group_y, levels = groups)
+  
   g <- ggplot(data = ds)+
     geom_tile(aes(x = group_x, y = group_y), 
               col = "white", fill = "#eeeeee")+

@@ -2,8 +2,8 @@
 get_profiles <- function(x,
                          hc_link = "average",
                          hc_dist = "euclidean",
-                         select_ds,
-                         select_ts) {
+                         select_cs,
+                         select_ds) {
   eg <- x$s$mu_group
   es <- x$s$mu_well
 
@@ -15,12 +15,12 @@ get_profiles <- function(x,
     es <- es[es$dose %in% select_ds, ]
   }
 
-  if(missing(select_ts)==FALSE) {
-    if(any(!select_ts %in% unique(eg$compound))) {
+  if(missing(select_cs)==FALSE) {
+    if(any(!select_cs %in% unique(eg$compound))) {
       stop("selected compounds not found in data")
     }
-    eg <- eg[eg$compound %in% select_ts, ]
-    es <- es[es$compound %in% select_ts, ]
+    eg <- eg[eg$compound %in% select_cs, ]
+    es <- es[es$compound %in% select_cs, ]
   }
 
   q <- acast(data = eg, formula = compound~dose, value.var = "mean")

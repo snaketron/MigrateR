@@ -45,10 +45,10 @@ save(d, file = "data/d.RData", compress = TRUE)
 
 # apply cellmig
 cellmig_out <- cellmig(x = d,
-             control = list(mcmc_warmup = 200,
-                            mcmc_steps = 1000,
-                            mcmc_chains = 2,
-                            mcmc_cores = 2,
+             control = list(mcmc_warmup = 250,
+                            mcmc_steps = 750,
+                            mcmc_chains = 3,
+                            mcmc_cores = 3,
                             mcmc_algorithm = "NUTS",
                             adapt_delta = 0.8,
                             max_treedepth = 10))

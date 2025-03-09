@@ -72,8 +72,8 @@ get_violins <- function(x, from_groups, to_group) {
     if(all(from_groups %in% gmap$group)==FALSE) {
       stop("unknown group in from_groups")
     }
-    if(all(to_groups %in% gmap$group)==FALSE) {
-      stop("unknown group in to_groups")
+    if(all(to_group %in% gmap$group)==FALSE) {
+      stop("unknown group in to_group")
     }
     
     gmap_from <- gmap[gmap$group %in% from_groups,]

@@ -1,5 +1,5 @@
 ---
-title: "cellmig: quantifying cell migration speed with hierarchical Bayesian models"
+title: "cellmig: quantifying cell migration with hierarchical Bayesian models"
 author: "Simo Kitanovski (simo.kitanovski@uni-due.de)"
 output:
   BiocStyle::html_document
@@ -88,7 +88,7 @@ o <- cellmig(x = d,
 ```
 
 
-# Compound:dose effects on migration speed
+# What are the overall effects of compounds and doses on cell migration?
 
 ```{r, fig.width=6, fig.height=3}
 ggplot(data = o$s$mu_group)+
@@ -101,7 +101,7 @@ ggplot(data = o$s$mu_group)+
 
 
 
-# Compound:dose profiles
+# Compare the dose-response `profiles` for different compounds
 
 ```{r, fig.width=9, fig.height=5}
 get_profiles(x = o)+
@@ -109,17 +109,35 @@ get_profiles(x = o)+
 ```
 
 
+# Compare the effects between treatment group
 
+## Pairwise dot-plot comparison $\rightarrow$ x minus y axis
+  * x/y-axis treatment groups (combinations of compounds and doses)
+  * $\delta$: Difference between treatment groups at y-x axis.
+  * $\pi$: probability of seing either completely positive or negative $\delta$
 
-# Compare treatment effects
-
-```{r, fig.width=6, fig.height=4}
+```{r, fig.width=8, fig.height=6}
 u <- get_pairs(x = o)
+u$plot
 ```
 
 
 
-# Posterior predictive check (PPC)
+## Violin plot based targeted comparison
+  * x/y-axis treatment groups (combinations of compounds and doses)
+  * $\delta$: Difference between treatment groups at y-x axis.
+  * $\pi$: probability of seing either completely positive or negative $\delta$
+
+```{r, fig.width=7, fig.height=2.5}
+u <- get_violins(x = o, 
+                 from_groups = c("c1|d1", "c1|d2", "c1|d3", "c1|d4", "c1|d5"), 
+                 to_group = "c2|d1")
+u$plot
+```
+
+
+
+# Posterior predictive checks (PPCs)
 
 ```{r, fig.width=5, fig.height=5}
 g <- get_ppc(x = o)
@@ -127,7 +145,7 @@ g
 ```
 
 
-# `migcell` can also simulate data
+# `migcell` can be used to simulate data
 
 ```{r}
 sim_data <- sim(N_well_cells = 20, 

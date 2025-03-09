@@ -112,9 +112,10 @@ get_profiles(x = o)+
 # Compare the effects between treatment group
 
 ## Pairwise dot-plot comparison $\rightarrow$ x minus y axis
+
   * x/y-axis treatment groups (combinations of compounds and doses)
   * $\delta$: Difference between treatment groups at y-x axis.
-  * $\pi$: probability of seing either completely positive or negative $\delta$
+  * $\pi$: probability of observing either a completely positive or negative $\delta$
 
 ```{r, fig.width=8, fig.height=6}
 u <- get_pairs(x = o)
@@ -123,10 +124,15 @@ u$plot
 
 
 
-## Violin plot based targeted comparison
-  * x/y-axis treatment groups (combinations of compounds and doses)
-  * $\delta$: Difference between treatment groups at y-x axis.
-  * $\pi$: probability of seing either completely positive or negative $\delta$
+## Violin plot based comparison
+
+  * from_groups: vector of treatment groups to consider (combinations of 
+  compounds and doses)
+  * to_group: target treatment group
+  * violins show the posterior distributions of the differences ($\delta$: 
+  each element from `from_groups` vs. `to_group`).
+  * label: probability, $\pi$, of observing completely positive or negative 
+  $\delta$
 
 ```{r, fig.width=7, fig.height=2.5}
 u <- get_violins(x = o, 
